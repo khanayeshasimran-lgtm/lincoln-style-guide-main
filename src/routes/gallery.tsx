@@ -44,17 +44,127 @@ type Category = "All" | "Events" | "Achievements" | "Campus" | "Abroad" | "Sport
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 
 const PHOTOS = [
-  { id: 1,  category: "Events",       year: "2025", title: "Global Alumni Reunion — KL",             span: "row-span-2", gradient: "from-red-900 to-rose-950",     badge: "1,200+ attended" },
-  { id: 2,  category: "Achievements", year: "2025", title: "Forbes Asia 30 Under 30 — Ahmad Fauzi",  span: "",           gradient: "from-amber-900 to-orange-950", badge: "Class of 2017"   },
-  { id: 3,  category: "Campus",       year: "2025", title: "New Innovation Hub Opening",              span: "",           gradient: "from-blue-900 to-indigo-950",  badge: "Petaling Jaya"   },
-  { id: 4,  category: "Abroad",       year: "2024", title: "Alumni Chapter — London Meetup",          span: "col-span-2", gradient: "from-slate-800 to-slate-950",  badge: "42 alumni"       },
-  { id: 5,  category: "Events",       year: "2024", title: "Mentorship Summit 2024",                  span: "",           gradient: "from-purple-900 to-violet-950", badge: "3,100+ online"  },
-  { id: 6,  category: "Sports",       year: "2024", title: "Alumni Cricket Tournament",               span: "",           gradient: "from-emerald-900 to-teal-950", badge: "6 teams"         },
-  { id: 7,  category: "Achievements", year: "2024", title: "Dr. Priya Nair — WHO Fellowship",        span: "row-span-2", gradient: "from-pink-900 to-rose-950",    badge: "Class of 2021"   },
-  { id: 8,  category: "Campus",       year: "2023", title: "Graduation Ceremony — Batch 2023",        span: "",           gradient: "from-sky-900 to-blue-950",     badge: "840 graduates"   },
-  { id: 9,  category: "Events",       year: "2023", title: "Scholarship Fundraising Gala",            span: "",           gradient: "from-yellow-900 to-amber-950", badge: "RM 2.4M raised"  },
-  { id: 10, category: "Abroad",       year: "2023", title: "Singapore Chapter — Founders Night",     span: "",           gradient: "from-cyan-900 to-teal-950",    badge: "Singapore"       },
-  { id: 11, category: "Sports",       year: "2023", title: "Badminton Inter-Alumni Cup",              span: "",           gradient: "from-lime-900 to-green-950",   badge: "12 teams"        },
+  {
+    id: 1,
+    category: "Events",
+    year: "2025",
+    title: "Global Alumni Reunion — KL",
+    span: "row-span-2",
+    gradient: "from-red-900 to-rose-950",
+    badge: "1,200+ attended",
+    // Conference / large gathering
+    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=75",
+  },
+  {
+    id: 2,
+    category: "Achievements",
+    year: "2025",
+    title: "Forbes Asia 30 Under 30 — Ahmad Fauzi",
+    span: "",
+    gradient: "from-amber-900 to-orange-950",
+    badge: "Class of 2017",
+    // Professional portrait / award
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=75",
+  },
+  {
+    id: 3,
+    category: "Campus",
+    year: "2025",
+    title: "New Innovation Hub Opening",
+    span: "",
+    gradient: "from-blue-900 to-indigo-950",
+    badge: "Petaling Jaya",
+    // Modern university building
+    image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=800&q=75",
+  },
+  {
+    id: 4,
+    category: "Abroad",
+    year: "2024",
+    title: "Alumni Chapter — London Meetup",
+    span: "col-span-2",
+    gradient: "from-slate-800 to-slate-950",
+    badge: "42 alumni",
+    // Group photo / city
+    image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=75",
+  },
+  {
+    id: 5,
+    category: "Events",
+    year: "2024",
+    title: "Mentorship Summit 2024",
+    span: "",
+    gradient: "from-purple-900 to-violet-950",
+    badge: "3,100+ online",
+    // Panel / webinar setup
+    image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=800&q=75",
+  },
+  {
+    id: 6,
+    category: "Sports",
+    year: "2024",
+    title: "Alumni Cricket Tournament",
+    span: "",
+    gradient: "from-emerald-900 to-teal-950",
+    badge: "6 teams",
+    // Cricket / outdoor sports
+    image: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=800&q=75",
+  },
+  {
+    id: 7,
+    category: "Achievements",
+    year: "2024",
+    title: "Dr. Priya Nair — WHO Fellowship",
+    span: "row-span-2",
+    gradient: "from-pink-900 to-rose-950",
+    badge: "Class of 2021",
+    // Medical professional / lab
+    image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=800&q=75",
+  },
+  {
+    id: 8,
+    category: "Campus",
+    year: "2023",
+    title: "Graduation Ceremony — Batch 2023",
+    span: "",
+    gradient: "from-sky-900 to-blue-950",
+    badge: "840 graduates",
+    // Graduation ceremony
+    image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=75",
+  },
+  {
+    id: 9,
+    category: "Events",
+    year: "2023",
+    title: "Scholarship Fundraising Gala",
+    span: "",
+    gradient: "from-yellow-900 to-amber-950",
+    badge: "RM 2.4M raised",
+    // Gala / formal dinner
+    image: "https://images.unsplash.com/photo-1519671282429-b44660ead0a7?auto=format&fit=crop&w=800&q=75",
+  },
+  {
+    id: 10,
+    category: "Abroad",
+    year: "2023",
+    title: "Singapore Chapter — Founders Night",
+    span: "",
+    gradient: "from-cyan-900 to-teal-950",
+    badge: "Singapore",
+    // Singapore skyline / networking
+    image: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=800&q=75",
+  },
+  {
+    id: 11,
+    category: "Sports",
+    year: "2023",
+    title: "Badminton Inter-Alumni Cup",
+    span: "",
+    gradient: "from-lime-900 to-green-950",
+    badge: "12 teams",
+    // Badminton / indoor sports
+    image: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=800&q=75",
+  },
 ];
 
 const NEWS_ARTICLES = [
@@ -173,14 +283,13 @@ function Lightbox({ photo, onClose }: { photo: typeof PHOTOS[0]; onClose: () => 
         style={{ animation: "lightboxIn 300ms cubic-bezier(.22,.68,0,1.2) both" }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className={`h-80 bg-gradient-to-br ${photo.gradient} relative`}>
-          <div
-            className="absolute inset-0 opacity-[0.05]"
-            style={{
-              backgroundImage: "repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)",
-              backgroundSize: "20px 20px",
-            }}
+        <div className="h-80 relative overflow-hidden">
+          <img
+            src={photo.image}
+            alt={photo.title}
+            className="w-full h-full object-cover"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           <div className="absolute inset-0 flex items-end p-8">
             <div>
               <span className="inline-block text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-white/15 border border-white/20 text-white mb-3">
@@ -302,25 +411,28 @@ function Gallery() {
       <section
         id="gallery-hero"
         className="relative overflow-hidden py-36 lg:py-48"
-        style={{ background: "linear-gradient(160deg, #7f0d18 0%, #1a0306 60%, #0d0d14 100%)" }}
       >
+        {/* Background image — same pattern as About page */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1920&q=80"
+            alt="Alumni gathering"
+            className="w-full h-full object-cover object-center scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-red-950/95 via-red-900/80 to-neutral-900/90 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-red-950/40 to-background" />
+        </div>
+
         <div
-          className="absolute inset-0 opacity-[0.05] pointer-events-none"
-          style={{
-            backgroundImage: "repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)",
-            backgroundSize: "24px 24px",
-          }}
-        />
-        <div
-          className="absolute -top-20 -right-20 w-[600px] h-[600px] rounded-full opacity-20 pointer-events-none"
+          className="absolute -top-20 -right-20 w-[600px] h-[600px] rounded-full opacity-20 pointer-events-none z-10"
           style={{ background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)" }}
         />
         <div
-          className="absolute bottom-0 left-1/3 w-[400px] h-[400px] rounded-full opacity-10 pointer-events-none"
+          className="absolute bottom-0 left-1/3 w-[400px] h-[400px] rounded-full opacity-10 pointer-events-none z-10"
           style={{ background: "radial-gradient(circle, #f59e0b 0%, transparent 70%)" }}
         />
 
-        <div className="container-page relative z-10">
+        <div className="container-page relative z-20">
           <div className="max-w-3xl">
             <span className="hero-g1 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-amber-400 mb-6">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
@@ -404,15 +516,15 @@ function Gallery() {
               style={{ animation: `gridFade 300ms ease-out ${i * 50}ms both` }}
               onClick={() => setLightboxPhoto(photo)}
             >
-              {/* Gradient background (stands in for real image) */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${photo.gradient}`} />
-              <div
-                className="absolute inset-0 opacity-[0.05]"
-                style={{
-                  backgroundImage: "repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)",
-                  backgroundSize: "20px 20px",
-                }}
+              {/* Real photo */}
+              <img
+                src={photo.image}
+                alt={photo.title}
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
               />
+              {/* Dark scrim for legibility */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/10" />
 
               {/* Hover overlay */}
               <div className="tile-overlay absolute inset-0 bg-black/30 flex items-center justify-center">
@@ -423,7 +535,7 @@ function Gallery() {
 
               {/* Year badge */}
               <div className="absolute top-3 left-3">
-                <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-black/30 text-white/80 border border-white/10">
+                <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-black/40 text-white/80 border border-white/10 backdrop-blur-sm">
                   {photo.year}
                 </span>
               </div>
@@ -463,15 +575,13 @@ function Gallery() {
           {/* Featured video */}
           <div
             className="relative rounded-2xl overflow-hidden h-72 mb-6 cursor-pointer group"
-            style={{ background: "linear-gradient(135deg, #7f0d18 0%, #1a0306 100%)" }}
           >
-            <div
-              className="absolute inset-0 opacity-[0.05]"
-              style={{
-                backgroundImage: "repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)",
-                backgroundSize: "24px 24px",
-              }}
+            <img
+              src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80"
+              alt="Global Reunion 2025 highlight reel"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
             <div
               className="absolute -bottom-16 -right-16 w-64 h-64 rounded-full opacity-20"
               style={{ background: "radial-gradient(circle, #f59e0b, transparent 70%)" }}
@@ -546,20 +656,13 @@ function Gallery() {
         <div
           className="rounded-2xl border border-border bg-card overflow-hidden mb-6 grid md:grid-cols-[1fr_2fr] cursor-pointer hover:border-primary/30 hover:shadow-elegant transition-all group"
         >
-          <div
-            className="h-48 md:h-auto relative"
-            style={{ background: "linear-gradient(135deg, hsl(350 85% 22%) 0%, hsl(220 40% 14%) 100%)" }}
-          >
-            <div
-              className="absolute inset-0 opacity-[0.05]"
-              style={{
-                backgroundImage: "repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)",
-                backgroundSize: "20px 20px",
-              }}
+          <div className="h-48 md:h-auto relative overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?auto=format&fit=crop&w=600&q=80"
+              alt="Forbes Asia 30 Under 30"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Newspaper className="h-12 w-12 text-white/20" />
-            </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
             <div className="absolute top-4 left-4">
               <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-amber-400/20 border border-amber-400/30 text-amber-300">
                 <Star className="h-2.5 w-2.5" /> Top Story
@@ -658,19 +761,22 @@ function Gallery() {
               className="rounded-2xl overflow-hidden border border-border"
               style={{ background: "linear-gradient(160deg, hsl(350 85% 18%) 0%, hsl(220 40% 12%) 100%)" }}
             >
-              <div className="h-40 relative">
-                <div
-                  className="absolute inset-0 opacity-[0.05]"
-                  style={{
-                    backgroundImage: "repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)",
-                    backgroundSize: "18px 18px",
-                  }}
+              <div className="h-40 relative overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80"
+                  alt="Dr. Priya Nair"
+                  className="w-full h-full object-cover opacity-60"
                 />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />
                 <div
-                  className="absolute -bottom-8 left-8 w-20 h-20 rounded-full border-4 border-white/20 flex items-center justify-center text-2xl font-bold text-white shadow-xl"
+                  className="absolute -bottom-8 left-8 w-20 h-20 rounded-full border-4 border-white/20 flex items-center justify-center text-2xl font-bold text-white shadow-xl overflow-hidden"
                   style={{ background: "linear-gradient(135deg, hsl(350 85% 35%), hsl(220 40% 22%))" }}
                 >
-                  PN
+                  <img
+                    src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=80&h=80&q=80"
+                    alt="Dr. Priya Nair avatar"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
 
@@ -915,7 +1021,6 @@ function Gallery() {
               key={i}
               className="social-post rounded-2xl border border-border bg-card p-5 flex flex-col gap-4 cursor-pointer"
             >
-              {/* Header */}
               <div className="flex items-center gap-3">
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
@@ -936,11 +1041,9 @@ function Gallery() {
                 <ExternalLink className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               </div>
 
-              {/* Body */}
               <p className="text-sm text-foreground/80 leading-relaxed flex-1">{post.text}</p>
               <p className="text-xs font-semibold text-primary">{post.hashtags}</p>
 
-              {/* Actions */}
               <div className="flex items-center gap-4 pt-3 border-t border-border">
                 <button className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-rose-500 transition-colors">
                   <Heart className="h-3.5 w-3.5" /> {post.likes.toLocaleString()}

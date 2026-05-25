@@ -10,16 +10,15 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
-  Play,
   Mic2,
   Wifi,
   Building2,
   Briefcase,
   Network,
   Send,
-  Image as ImageIcon,
+  Globe,
+  TrendingUp,
 } from "lucide-react";
-import { events } from "@/data/alumni";
 
 export const Route = createFileRoute("/events")({
   component: Events,
@@ -35,83 +34,248 @@ export const Route = createFileRoute("/events")({
   }),
 });
 
-// ─── TYPES ───────────────────────────────────────────────────────────────────
-
 type RSVPState = "idle" | "loading" | "done";
-type FilterTab = "All" | "Upcoming" | "Past" | "Online" | "Offline" | "Networking" | "Career";
+type FilterTab = "All" | "Upcoming" | "Past" | "Online" | "In-Person" | "Networking" | "Career";
 
-interface Event {
+interface CalEvent {
   id: string;
   title: string;
   date: string;
+  time: string;
   location: string;
-  mode: string;
+  mode: "Online" | "In-Person";
+  category: "Networking" | "Career" | "Reunion" | "Mentorship" | "Sports" | "Medical";
   description: string;
   speakers: string[];
+  image: string;
+  attendees: number;
+  featured?: boolean;
 }
 
-// ─── STATIC DATA ─────────────────────────────────────────────────────────────
-
-const pastEventsGallery = [
+const ALL_EVENTS: CalEvent[] = [
   {
-    year: "2025",
-    title: "Global Alumni Reunion — KL",
-    tag: "Reunion",
-    tagColor: "bg-red-500/20 text-red-400 border-red-400/20",
-    attendees: "1,200+",
-    gradient: "from-red-900 to-rose-950",
+    id: "e1",
+    title: "Global Alumni Reunion 2026",
+    date: "2026-06-13",
+    time: "6:00 PM – 11:00 PM",
+    location: "Mandarin Oriental, Kuala Lumpur",
+    mode: "In-Person",
+    category: "Reunion",
+    description: "The flagship annual gathering of Lincoln alumni from across 85 countries. An evening of connection, celebration, and inspiration.",
+    speakers: ["Prof. Dr. Amiya Bhaumik", "Datuk Dr. Bibi Florina"],
+    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=900&q=80",
+    attendees: 1200,
+    featured: true,
   },
   {
-    year: "2025",
-    title: "Fintech Founders Night",
-    tag: "Career",
-    tagColor: "bg-amber-500/20 text-amber-400 border-amber-400/20",
-    attendees: "340",
-    gradient: "from-amber-900 to-orange-950",
+    id: "e2",
+    title: "Fintech Founders Panel",
+    date: "2026-06-20",
+    time: "7:00 PM – 9:30 PM",
+    location: "MaGIC, Cyberjaya",
+    mode: "In-Person",
+    category: "Career",
+    description: "Six Lincoln alumni founders share how they scaled fintech startups across ASEAN. Q&A and networking dinner included.",
+    speakers: ["Ahmad Fauzi", "Mei Lin Chen", "Rajan Pillai"],
+    image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=900&q=80",
+    attendees: 340,
   },
   {
-    year: "2024",
+    id: "e3",
     title: "Virtual Mentorship Summit",
-    tag: "Online",
-    tagColor: "bg-blue-500/20 text-blue-400 border-blue-400/20",
-    attendees: "3,100+",
-    gradient: "from-blue-900 to-indigo-950",
+    date: "2026-07-05",
+    time: "10:00 AM – 4:00 PM",
+    location: "Zoom — Link sent on registration",
+    mode: "Online",
+    category: "Mentorship",
+    description: "Match with senior alumni mentors in your industry. Structured 1:1 sessions plus group workshops on career acceleration.",
+    speakers: ["Dr. Priya Nair", "Marcus Chen", "Fatima Al-Rashidi"],
+    image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&w=900&q=80",
+    attendees: 3100,
   },
   {
-    year: "2024",
+    id: "e4",
     title: "Medical Alumni Gala",
-    tag: "Networking",
-    tagColor: "bg-emerald-500/20 text-emerald-400 border-emerald-400/20",
-    attendees: "580",
-    gradient: "from-emerald-900 to-teal-950",
+    date: "2026-07-18",
+    time: "7:30 PM – 11:00 PM",
+    location: "Shangri-La Hotel, Penang",
+    mode: "In-Person",
+    category: "Medical",
+    description: "An elegant black-tie celebration for alumni from Lincoln's medical and health sciences faculties. Research awards ceremony included.",
+    speakers: ["Prof. Dr. Abdul Gani", "Dr. Priya Nair"],
+    image: "https://images.unsplash.com/photo-1519671282429-b44660ead0a7?auto=format&fit=crop&w=900&q=80",
+    attendees: 580,
   },
   {
-    year: "2024",
-    title: "Engineering Hackathon",
-    tag: "Career",
-    tagColor: "bg-purple-500/20 text-purple-400 border-purple-400/20",
-    attendees: "260",
-    gradient: "from-purple-900 to-violet-950",
+    id: "e5",
+    title: "Engineering & Tech Hackathon",
+    date: "2026-08-01",
+    time: "9:00 AM – 6:00 PM",
+    location: "Lincoln Campus, Petaling Jaya",
+    mode: "In-Person",
+    category: "Career",
+    description: "24-hour alumni hackathon tackling real-world sustainability problems. Top teams pitch to a VC panel. Prizes worth RM 50,000.",
+    speakers: ["Raj Patel", "Nurul Izzah Tan"],
+    image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=900&q=80",
+    attendees: 260,
   },
   {
-    year: "2023",
+    id: "e6",
+    title: "London Chapter Networking Night",
+    date: "2026-08-14",
+    time: "6:30 PM – 9:30 PM",
+    location: "The Ned, London, UK",
+    mode: "In-Person",
+    category: "Networking",
+    description: "Alumni based in the UK and Europe gather for an evening of canapes, cocktails, and conversation in central London.",
+    speakers: ["Aisha Rahman", "David Lim"],
+    image: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=900&q=80",
+    attendees: 95,
+  },
+  {
+    id: "e7",
     title: "Scholarship Fundraising Gala",
-    tag: "Reunion",
-    tagColor: "bg-pink-500/20 text-pink-400 border-pink-400/20",
-    attendees: "820",
-    gradient: "from-pink-900 to-rose-950",
+    date: "2026-09-05",
+    time: "7:00 PM – 10:30 PM",
+    location: "Hilton Kuala Lumpur",
+    mode: "In-Person",
+    category: "Reunion",
+    description: "Annual black-tie fundraiser that has raised over RM 8M for student scholarships across 6 editions. Target: RM 3M this year.",
+    speakers: ["Prof. Dr. Amiya Bhaumik", "Datuk Dr. Bibi Florina"],
+    image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=900&q=80",
+    attendees: 820,
+    featured: true,
+  },
+  {
+    id: "e8",
+    title: "AI & Healthcare Webinar",
+    date: "2026-09-19",
+    time: "3:00 PM – 5:00 PM",
+    location: "Online — Google Meet",
+    mode: "Online",
+    category: "Medical",
+    description: "How AI is reshaping diagnostics, drug discovery, and patient care. Join four Lincoln alumni working at the cutting edge.",
+    speakers: ["Dr. Fatima Al-Rashidi", "Dr. Kevin Ng"],
+    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=900&q=80",
+    attendees: 1500,
+  },
+  {
+    id: "e9",
+    title: "Singapore Alumni Founders Night",
+    date: "2026-10-03",
+    time: "6:30 PM – 9:30 PM",
+    location: "WeWork, Raffles Place, Singapore",
+    mode: "In-Person",
+    category: "Career",
+    description: "Startup founders and operators share their journey building companies in Singapore's vibrant tech ecosystem.",
+    speakers: ["Raj Patel", "Sarah Yeo", "Amir Hassan"],
+    image: "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=900&q=80",
+    attendees: 180,
+  },
+  {
+    id: "e10",
+    title: "Badminton Inter-Alumni Cup",
+    date: "2026-10-17",
+    time: "8:00 AM – 6:00 PM",
+    location: "Axiata Arena, KL",
+    mode: "In-Person",
+    category: "Sports",
+    description: "The annual inter-alumni sports tournament. Open to all Lincoln graduates. Register your team of 4 before slots fill up.",
+    speakers: [],
+    image: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=900&q=80",
+    attendees: 320,
+  },
+  {
+    id: "e11",
+    title: "Women in Leadership Forum",
+    date: "2026-11-07",
+    time: "9:00 AM – 5:00 PM",
+    location: "Pullman KLCC, Kuala Lumpur",
+    mode: "In-Person",
+    category: "Networking",
+    description: "A full-day forum celebrating and empowering women alumni across all industries. Keynotes, panels, and workshops.",
+    speakers: ["Datuk Dr. Bibi Florina", "Nurul Izzah Tan", "Dr. Priya Nair"],
+    image: "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=900&q=80",
+    attendees: 450,
+    featured: true,
+  },
+  {
+    id: "e12",
+    title: "Year-End Alumni Mixer",
+    date: "2026-11-28",
+    time: "7:00 PM – 10:00 PM",
+    location: "Rooftop, The Aloft, KL Sentral",
+    mode: "In-Person",
+    category: "Networking",
+    description: "Wind down 2026 with the alumni community. Rooftop views, live jazz, and great conversations. All welcome.",
+    speakers: [],
+    image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=900&q=80",
+    attendees: 200,
+  },
+  {
+    id: "e13",
+    title: "Dubai Alumni Business Brunch",
+    date: "2026-06-27",
+    time: "10:00 AM – 1:00 PM",
+    location: "Four Seasons DIFC, Dubai, UAE",
+    mode: "In-Person",
+    category: "Networking",
+    description: "A curated brunch for Lincoln alumni in the Gulf region. Meet peers across finance, real estate, and tech over a relaxed morning.",
+    speakers: ["Khalid Al-Mansoori", "Priya Sethi"],
+    image: "https://images.unsplash.com/photo-1467803738586-46b7eb7b16a1?auto=format&fit=crop&w=900&q=80",
+    attendees: 75,
+  },
+  {
+    id: "e14",
+    title: "Graduate School Info Night",
+    date: "2026-07-23",
+    time: "7:00 PM – 9:00 PM",
+    location: "Online — Zoom Webinar",
+    mode: "Online",
+    category: "Career",
+    description: "Considering a postgrad? Senior alumni from Oxford, NUS, and Harvard share how they chose programs, secured funding, and made the jump.",
+    speakers: ["Dr. Mei Ling Tan", "James Okonkwo"],
+    image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=900&q=80",
+    attendees: 920,
+  },
+  {
+    id: "e15",
+    title: "Lincoln Sports Day 2026",
+    date: "2026-08-22",
+    time: "7:30 AM – 5:00 PM",
+    location: "National Sports Complex, Bukit Jalil",
+    mode: "In-Person",
+    category: "Sports",
+    description: "Football, futsal, netball, and swimming across 8 disciplines. Bring your family — kids' activities and food stalls all day long.",
+    speakers: [],
+    image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=900&q=80",
+    attendees: 650,
+  },
+  {
+    id: "e16",
+    title: "Mental Health & Wellness Talk",
+    date: "2026-10-10",
+    time: "2:00 PM – 4:30 PM",
+    location: "Online — Google Meet",
+    mode: "Online",
+    category: "Medical",
+    description: "World Mental Health Day special. Three clinical psychologists from the Lincoln alumni community discuss burnout, resilience, and seeking help.",
+    speakers: ["Dr. Aiman Yusof", "Dr. Lena Chong", "Dr. Rahul Mehta"],
+    image: "https://images.unsplash.com/photo-1508847154043-be5407fcaa5a?auto=format&fit=crop&w=900&q=80",
+    attendees: 2200,
   },
 ];
 
-const HIGHLIGHT_VIDEOS = [
-  { title: "Global Reunion 2025 — Official Highlight Reel", duration: "4:32", views: "12.4K" },
-  { title: "Alumni Founders Night — Panel Recap", duration: "18:07", views: "5.8K" },
-  { title: "LUC Class of 2024 Graduation Ceremony", duration: "1:24:55", views: "34.1K" },
-];
+const CATEGORY_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
+  Reunion:    { bg: "bg-red-500/15",     text: "text-red-600",    dot: "#dc2626" },
+  Career:     { bg: "bg-amber-500/15",   text: "text-amber-600",  dot: "#d97706" },
+  Mentorship: { bg: "bg-blue-500/15",    text: "text-blue-600",   dot: "#2563eb" },
+  Medical:    { bg: "bg-emerald-500/15", text: "text-emerald-600",dot: "#059669" },
+  Networking: { bg: "bg-violet-500/15",  text: "text-violet-600", dot: "#7c3aed" },
+  Sports:     { bg: "bg-orange-500/15",  text: "text-orange-600", dot: "#ea580c" },
+};
 
-const FILTER_TABS: FilterTab[] = ["All", "Upcoming", "Past", "Online", "Offline", "Networking", "Career"];
-
-// ─── COUNTDOWN HOOK ───────────────────────────────────────────────────────────
+const FILTER_TABS: FilterTab[] = ["All", "Upcoming", "Past", "Online", "In-Person", "Networking", "Career"];
 
 function useCountdown(targetDate: string) {
   const calc = () => {
@@ -132,17 +296,15 @@ function useCountdown(targetDate: string) {
   return time;
 }
 
-// ─── EVENT DETAIL MODAL (S4) ─────────────────────────────────────────────────
-
-function EventModal({ event, onClose }: { event: Event; onClose: () => void }) {
+function EventModal({ event, onClose }: { event: CalEvent; onClose: () => void }) {
   const [rsvpState, setRsvpState] = useState<RSVPState>("idle");
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handler);
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", h);
     document.body.style.overflow = "hidden";
-    return () => { window.removeEventListener("keydown", handler); document.body.style.overflow = ""; };
+    return () => { window.removeEventListener("keydown", h); document.body.style.overflow = ""; };
   }, [onClose]);
 
   const agenda = [
@@ -159,40 +321,29 @@ function EventModal({ event, onClose }: { event: Event; onClose: () => void }) {
     <div
       ref={overlayRef}
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.65)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}
+      style={{ backgroundColor: "rgba(0,0,0,0.7)", backdropFilter: "blur(12px)" }}
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
       <div
-        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl relative"
+        className="w-full max-w-2xl max-h-[92vh] overflow-y-auto rounded-2xl relative bg-white"
         style={{
-          background: "hsl(var(--card))",
-          border: "1px solid hsl(var(--border))",
-          boxShadow: "0 40px 80px -12px rgba(190,24,55,0.22), 0 12px 32px rgba(0,0,0,0.18)",
+          boxShadow: "0 48px 96px -16px rgba(0,0,0,0.35)",
           animation: "modalIn 320ms cubic-bezier(.22,.68,0,1.2) both",
         }}
       >
-        {/* Header gradient */}
-        <div
-          className="relative h-40 flex items-end p-7 shrink-0"
-          style={{ background: "linear-gradient(135deg, hsl(350 85% 22%) 0%, hsl(220 40% 14%) 100%)" }}
-        >
-          <div
-            className="absolute inset-0 opacity-[0.06] pointer-events-none"
-            style={{
-              backgroundImage: "repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)",
-              backgroundSize: "20px 20px",
-            }}
-          />
+        <div className="relative h-52 overflow-hidden rounded-t-2xl">
+          <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 rounded-full p-2 text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-            aria-label="Close"
+            className="absolute top-4 right-4 w-9 h-9 rounded-lg bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
-          <div className="relative z-10">
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-3 bg-white/15 border border-white/20 text-white">
-              {event.mode}
+          <div className="absolute bottom-0 left-0 p-6">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-md mb-2 bg-white/20 border border-white/25 text-white backdrop-blur-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-white" />
+              {event.category} · {event.mode}
             </span>
             <h2 className="font-display text-2xl font-bold text-white leading-tight" style={{ letterSpacing: "-0.02em" }}>
               {event.title}
@@ -201,79 +352,58 @@ function EventModal({ event, onClose }: { event: Event; onClose: () => void }) {
         </div>
 
         <div className="p-7 grid md:grid-cols-[1fr_auto] gap-8">
-          {/* Left: details */}
           <div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-6">{event.description}</p>
-
+            <p className="text-sm text-neutral-600 leading-relaxed mb-6">{event.description}</p>
             <ul className="space-y-3 mb-8">
               {[
                 { icon: Calendar, text: new Date(event.date).toDateString() },
-                { icon: Clock, text: "9:00 AM – 5:00 PM (MYT)" },
-                { icon: MapPin, text: event.location },
-                { icon: Users, text: event.speakers.join(" · ") },
+                { icon: Clock,    text: event.time },
+                { icon: MapPin,   text: event.location },
+                ...(event.speakers.length ? [{ icon: Mic2, text: event.speakers.join(" · ") }] : []),
+                { icon: Users, text: `${event.attendees.toLocaleString()} expected attendees` },
               ].map(({ icon: Icon, text }, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm">
-                  <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                    <Icon className="h-3.5 w-3.5 text-primary" />
+                  <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
+                    <Icon className="h-3.5 w-3.5 text-red-700" />
                   </div>
-                  <span className="text-foreground/80">{text}</span>
+                  <span className="text-neutral-700">{text}</span>
                 </li>
               ))}
             </ul>
-
-            {/* Agenda */}
             <div>
-              <h3 className="font-display font-semibold text-sm uppercase tracking-widest mb-4 text-muted-foreground">Agenda</h3>
+              <h3 className="font-semibold text-xs uppercase tracking-widest mb-4 text-neutral-400">Sample Agenda</h3>
               <div className="space-y-2">
                 {agenda.map((a) => (
                   <div key={a.time} className="flex items-center gap-3 text-sm">
-                    <span className="tabular-nums text-xs font-bold text-primary w-12 shrink-0">{a.time}</span>
-                    <span className="text-muted-foreground">{a.item}</span>
+                    <span className="tabular-nums text-xs font-bold text-red-700 w-12 shrink-0">{a.time}</span>
+                    <span className="text-neutral-500">{a.item}</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Right: register */}
           <div className="md:w-52 flex flex-col gap-3">
-            <div className="rounded-2xl border border-border p-5 text-center">
-              <div className="font-display text-4xl font-bold text-primary leading-none">
+            <div className="rounded-xl border-2 border-red-100 bg-red-50 p-5 text-center">
+              <div className="font-display text-5xl font-black text-red-700 leading-none">
                 {new Date(event.date).getDate()}
               </div>
-              <div className="text-xs uppercase tracking-widest font-semibold mt-1 text-muted-foreground">
+              <div className="text-xs uppercase tracking-widest font-bold mt-1 text-red-400">
                 {new Date(event.date).toLocaleString("en", { month: "long", year: "numeric" })}
               </div>
             </div>
             <button
-              onClick={() => {
-                if (rsvpState !== "idle") return;
-                setRsvpState("loading");
-                setTimeout(() => setRsvpState("done"), 1500);
-              }}
+              onClick={() => { if (rsvpState !== "idle") return; setRsvpState("loading"); setTimeout(() => setRsvpState("done"), 1500); }}
               disabled={rsvpState !== "idle"}
-              className="w-full rounded-full font-semibold py-3.5 text-sm transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-75"
-              style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+              className="w-full rounded-lg font-bold py-3.5 text-sm transition-all hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-75 bg-red-700 text-white"
             >
               {rsvpState === "idle" && "Register Now"}
-              {rsvpState === "loading" && (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                  Reserving…
-                </span>
-              )}
-              {rsvpState === "done" && (
-                <span className="flex items-center justify-center gap-2">
-                  <Check className="h-4 w-4" /> Registered!
-                </span>
-              )}
+              {rsvpState === "loading" && <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Reserving…</span>}
+              {rsvpState === "done" && <span className="flex items-center justify-center gap-2"><Check className="h-4 w-4" /> Registered!</span>}
             </button>
-            <Link
-              to="/contact"
-              className="w-full rounded-full border border-border py-3 text-xs font-semibold text-center hover:bg-muted transition-colors"
-            >
+            <button className="w-full rounded-lg border-2 border-neutral-200 py-3 text-xs font-bold text-neutral-600 hover:bg-neutral-50 transition-colors">
               Share Event
-            </Link>
+            </button>
           </div>
         </div>
       </div>
@@ -281,18 +411,17 @@ function EventModal({ event, onClose }: { event: Event; onClose: () => void }) {
   );
 }
 
-// ─── CALENDAR VIEW (S5) ───────────────────────────────────────────────────────
-
-function CalendarView({ events: evts, onSelectEvent }: { events: Event[]; onSelectEvent: (e: Event) => void }) {
+function BoldCalendar({ events: evts, onSelectEvent }: { events: CalEvent[]; onSelectEvent: (e: CalEvent) => void }) {
   const today = new Date();
-  const [current, setCurrent] = useState({ year: today.getFullYear(), month: today.getMonth() });
+  const [current, setCurrent] = useState({ year: 2026, month: 5 });
+  const [hoveredDay, setHoveredDay] = useState<number | null>(null);
 
   const firstDay = new Date(current.year, current.month, 1).getDay();
   const daysInMonth = new Date(current.year, current.month + 1, 0).getDate();
-  const monthName = new Date(current.year, current.month).toLocaleString("en", { month: "long", year: "numeric" });
+  const monthName = new Date(current.year, current.month).toLocaleString("en", { month: "long" });
+  const yearStr = new Date(current.year, current.month).getFullYear();
 
-  // Map date → events
-  const eventMap: Record<number, Event[]> = {};
+  const eventMap: Record<number, CalEvent[]> = {};
   evts.forEach((e) => {
     const d = new Date(e.date);
     if (d.getFullYear() === current.year && d.getMonth() === current.month) {
@@ -302,142 +431,250 @@ function CalendarView({ events: evts, onSelectEvent }: { events: Event[]; onSele
     }
   });
 
-  const cells: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+  const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+  const renderCells = () => {
+    const cells: React.ReactNode[] = [];
+    let cellIndex = 0;
+
+    for (let i = 0; i < firstDay; i++) {
+      const isRed = cellIndex % 2 === 1;
+      cells.push(
+        <div key={`empty-${i}`} className="min-h-[90px] p-2.5"
+          style={{ background: isRed ? "#b91c1c" : "#ffffff" }} />
+      );
+      cellIndex++;
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const isRed = cellIndex % 2 === 1;
+      const isToday = day === today.getDate() && current.month === today.getMonth() && current.year === today.getFullYear();
+      const eventsOnDay = eventMap[day] ?? [];
+      const hasEvent = eventsOnDay.length > 0;
+      const isHovered = hoveredDay === day;
+
+      cells.push(
+        <div
+          key={day}
+          onMouseEnter={() => setHoveredDay(day)}
+          onMouseLeave={() => setHoveredDay(null)}
+          onClick={() => { if (hasEvent) onSelectEvent(eventsOnDay[0]); }}
+          className="relative min-h-[90px] p-2.5 flex flex-col transition-all duration-150"
+          style={{
+            background: isHovered && hasEvent ? (isRed ? "#991b1b" : "#fef2f2") : isRed ? "#b91c1c" : "#ffffff",
+            cursor: hasEvent ? "pointer" : "default",
+          }}
+        >
+          <span
+            className="self-start w-8 h-8 flex items-center justify-center rounded-md text-sm font-bold transition-all"
+            style={{
+              background: isToday ? (isRed ? "#ffffff" : "#7f0d18") : "transparent",
+              color: isToday ? (isRed ? "#7f0d18" : "#ffffff") : isRed ? "#ffffff" : "#1f1f1f",
+            }}
+          >
+            {day}
+          </span>
+          <div className="mt-1 flex flex-col gap-0.5 flex-1">
+            {eventsOnDay.slice(0, 2).map((ev) => {
+              const col = CATEGORY_COLORS[ev.category];
+              return (
+                <div
+                  key={ev.id}
+                  className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-bold truncate leading-tight"
+                  style={{
+                    background: isRed ? "rgba(255,255,255,0.22)" : "rgba(127,13,24,0.12)",
+                    color: isRed ? "#ffffff" : "#7f0d18",
+                  }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: col.dot }} />
+                  <span className="hidden md:inline truncate">{ev.title}</span>
+                  <span className="md:hidden truncate">{ev.category}</span>
+                </div>
+              );
+            })}
+            {eventsOnDay.length > 2 && (
+              <span className="text-[9px] font-bold px-1.5" style={{ color: isRed ? "#fecaca" : "#7f0d18" }}>
+                +{eventsOnDay.length - 2} more
+              </span>
+            )}
+          </div>
+        </div>
+      );
+      cellIndex++;
+    }
+    return cells;
+  };
 
   return (
-    <div className="rounded-2xl border border-border bg-card overflow-hidden">
-      {/* Month header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <button
-          onClick={() => setCurrent((c) => {
-            const d = new Date(c.year, c.month - 1);
-            return { year: d.getFullYear(), month: d.getMonth() };
-          })}
-          className="p-1.5 rounded-lg hover:bg-muted transition-colors"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <h3 className="font-display font-semibold text-base">{monthName}</h3>
-        <button
-          onClick={() => setCurrent((c) => {
-            const d = new Date(c.year, c.month + 1);
-            return { year: d.getFullYear(), month: d.getMonth() };
-          })}
-          className="p-1.5 rounded-lg hover:bg-muted transition-colors"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
+    <div className="rounded-2xl overflow-hidden" style={{ boxShadow: "0 24px 64px rgba(0,0,0,0.10)" }}>
+      <div className="bg-red-700 px-8 py-6 flex items-center justify-between">
+        <div>
+          <div className="text-red-300 text-xs font-bold uppercase tracking-[0.2em] mb-0.5">{yearStr}</div>
+          <h3 className="font-display text-4xl font-black text-white tracking-tight">{monthName}</h3>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setCurrent((c) => { const d = new Date(c.year, c.month - 1); return { year: d.getFullYear(), month: d.getMonth() }; })}
+            className="w-10 h-10 rounded-lg bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => setCurrent({ year: 2026, month: today.getMonth() })}
+            className="px-4 h-10 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition-colors"
+          >
+            Today
+          </button>
+          <button
+            onClick={() => setCurrent((c) => { const d = new Date(c.year, c.month + 1); return { year: d.getFullYear(), month: d.getMonth() }; })}
+            className="w-10 h-10 rounded-lg bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
       </div>
-
-      {/* Day headers */}
-      <div className="grid grid-cols-7 bg-muted/50">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
-          <div key={d} className="py-2 text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+      <div className="grid grid-cols-7 bg-red-800">
+        {DAYS.map((d) => (
+          <div key={d} className="py-3 text-center text-[10px] font-black uppercase tracking-[0.15em] text-red-200">
             {d}
           </div>
         ))}
       </div>
-
-      {/* Grid */}
-      <div className="grid grid-cols-7">
-        {cells.map((day, i) => {
-          const isToday = day === today.getDate() && current.month === today.getMonth() && current.year === today.getFullYear();
-          const hasEvents = day !== null && eventMap[day];
-          return (
-            <div
-              key={i}
-              onClick={() => { if (hasEvents && day !== null) onSelectEvent(eventMap[day][0]); }}
-              className={`relative min-h-[60px] md:min-h-[80px] p-2 border-b border-r border-border/50 transition-colors
-                ${day === null ? "bg-muted/20" : ""}
-                ${hasEvents ? "cursor-pointer hover:bg-primary/5" : ""}
-              `}
-            >
-              {day !== null && (
-                <>
-                  <span
-                    className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-semibold
-                      ${isToday ? "bg-primary text-white" : "text-foreground"}
-                    `}
-                  >
-                    {day}
-                  </span>
-                  {hasEvents && (
-                    <div className="mt-1 space-y-0.5">
-                      {eventMap[day].slice(0, 2).map((e) => (
-                        <div
-                          key={e.id}
-                          className="hidden md:block text-[9px] font-semibold truncate rounded px-1 py-0.5 leading-tight"
-                          style={{ background: "hsl(var(--primary)/0.12)", color: "hsl(var(--primary))" }}
-                        >
-                          {e.title}
-                        </div>
-                      ))}
-                      <div className="flex md:hidden gap-0.5 mt-0.5">
-                        {eventMap[day].map((e) => (
-                          <span key={e.id} className="w-1.5 h-1.5 rounded-full bg-primary" />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          );
-        })}
+      <div className="grid grid-cols-7">{renderCells()}</div>
+      <div className="bg-white border-t border-neutral-100 px-8 py-4 flex flex-wrap gap-4">
+        {Object.entries(CATEGORY_COLORS).map(([cat, col]) => (
+          <span key={cat} className="flex items-center gap-1.5 text-xs font-semibold text-neutral-500">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: col.dot }} />
+            {cat}
+          </span>
+        ))}
       </div>
     </div>
   );
 }
 
-// ─── MAIN EVENTS PAGE ────────────────────────────────────────────────────────
+function EventCard({
+  event, index, onSelect, rsvpState, onRSVP,
+}: {
+  event: CalEvent; index: number; onSelect: (e: CalEvent) => void; rsvpState: RSVPState; onRSVP: (ev: React.MouseEvent, id: string) => void;
+}) {
+  const col = CATEGORY_COLORS[event.category] ?? CATEGORY_COLORS.Networking;
+  const d = new Date(event.date);
+
+  return (
+    <div
+      className="group relative bg-white rounded-2xl overflow-hidden cursor-pointer flex flex-col"
+      style={{
+        boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
+        animation: `cardIn 340ms ease-out ${index * 55}ms both`,
+        border: "1.5px solid #f0f0f0",
+        transition: "transform 260ms ease-out, box-shadow 260ms ease-out, border-color 260ms ease-out",
+      }}
+      onClick={() => onSelect(event)}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(-6px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 24px 56px rgba(185,28,28,0.13)"; (e.currentTarget as HTMLElement).style.borderColor = "#fca5a5"; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = ""; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; (e.currentTarget as HTMLElement).style.borderColor = "#f0f0f0"; }}
+    >
+      <div className="relative h-44 overflow-hidden">
+        <img src={event.image} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        <div className="absolute top-3 left-3 flex gap-1.5">
+          <span
+            className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border backdrop-blur-sm"
+            style={{ backgroundColor: col.dot + "25", color: col.dot, borderColor: col.dot + "40" }}
+          >
+            {event.category}
+          </span>
+          {event.featured && (
+            <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md bg-amber-400/25 border border-amber-400/40 text-amber-600 backdrop-blur-sm">
+              Featured
+            </span>
+          )}
+        </div>
+        <span className="absolute top-3 right-3 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-white/20 border border-white/30 text-white backdrop-blur-sm">
+          {event.mode === "Online" ? <Wifi className="h-2.5 w-2.5" /> : <Building2 className="h-2.5 w-2.5" />}
+          {event.mode}
+        </span>
+        <div className="absolute bottom-3 left-3 bg-white rounded-lg px-3 py-1.5">
+          <div className="font-display text-xl font-black text-red-700 leading-none">{d.getDate()}</div>
+          <div className="text-[9px] font-bold uppercase tracking-wider text-neutral-400">
+            {d.toLocaleString("en", { month: "short" })} {d.getFullYear()}
+          </div>
+        </div>
+      </div>
+
+      <div className="p-5 flex flex-col flex-1">
+        <h3 className="font-display text-lg font-bold text-neutral-900 leading-snug group-hover:text-red-700 transition-colors" style={{ letterSpacing: "-0.01em" }}>
+          {event.title}
+        </h3>
+        <p className="text-xs text-neutral-400 mt-1.5 flex items-center gap-1 font-medium">
+          <MapPin className="h-3 w-3" /> {event.location}
+        </p>
+        <p className="text-xs text-neutral-500 mt-0.5 flex items-center gap-1">
+          <Clock className="h-3 w-3" /> {event.time}
+        </p>
+        <p className="text-sm text-neutral-500 mt-3 leading-relaxed line-clamp-2 flex-1">{event.description}</p>
+        {event.speakers.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {event.speakers.slice(0, 2).map((s) => (
+              <span key={s} className="inline-flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-md bg-neutral-100 text-neutral-600">
+                <Mic2 className="h-2.5 w-2.5" /> {s}
+              </span>
+            ))}
+            {event.speakers.length > 2 && <span className="text-[10px] text-neutral-400 self-center">+{event.speakers.length - 2}</span>}
+          </div>
+        )}
+        <div className="mt-4 pt-4 border-t border-neutral-100 flex items-center justify-between">
+          <button
+            className={`rounded-lg px-5 py-2.5 text-xs font-bold transition-all ${rsvpState === "done" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-700 text-white hover:bg-red-800 hover:shadow-md"}`}
+            onClick={(ev) => onRSVP(ev, event.id)}
+            disabled={rsvpState !== "idle"}
+          >
+            {rsvpState === "idle" && "RSVP"}
+            {rsvpState === "loading" && <span className="flex items-center gap-1.5"><span className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" />Saving…</span>}
+            {rsvpState === "done" && <span className="flex items-center gap-1.5"><Check className="h-3 w-3" /> Done</span>}
+          </button>
+          <span className="text-xs text-neutral-400 flex items-center gap-1">
+            <Users className="h-3 w-3" /> {event.attendees.toLocaleString()}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Events() {
   const [activeTab, setActiveTab] = useState<FilterTab>("All");
   const [filterKey, setFilterKey] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<CalEvent | null>(null);
   const [rsvpStates, setRsvpStates] = useState<Record<string, RSVPState>>({});
-  const [galleryYear, setGalleryYear] = useState("All");
   const [hostName, setHostName] = useState("");
   const [hostEmail, setHostEmail] = useState("");
   const [hostIdea, setHostIdea] = useState("");
   const [hostSubmit, setHostSubmit] = useState<"idle" | "loading" | "done">("idle");
 
-  // Featured event = first upcoming
-  const featuredEvent = events[0];
-  const countdown = useCountdown(featuredEvent?.date ?? "2026-12-31");
+  const featuredEvent = ALL_EVENTS.find((e) => e.featured) ?? ALL_EVENTS[0];
+  const countdown = useCountdown(featuredEvent.date);
+  const now = new Date();
 
-  // Filter logic
-  const getFiltered = () => {
-    const now = new Date();
-    if (activeTab === "All") return events;
-    if (activeTab === "Upcoming") return events.filter((e) => new Date(e.date) >= now);
-    if (activeTab === "Past") return events.filter((e) => new Date(e.date) < now);
-    if (activeTab === "Online") return events.filter((e) => e.mode === "Online");
-    if (activeTab === "Offline") return events.filter((e) => e.mode === "Offline");
-    if (activeTab === "Networking") return events.filter((_, i) => i % 3 === 0);
-    if (activeTab === "Career") return events.filter((_, i) => i % 3 === 1);
-    return events;
+  const getFiltered = (): CalEvent[] => {
+    if (activeTab === "All") return ALL_EVENTS;
+    if (activeTab === "Upcoming") return ALL_EVENTS.filter((e) => new Date(e.date) >= now);
+    if (activeTab === "Past") return ALL_EVENTS.filter((e) => new Date(e.date) < now);
+    if (activeTab === "Online") return ALL_EVENTS.filter((e) => e.mode === "Online");
+    if (activeTab === "In-Person") return ALL_EVENTS.filter((e) => e.mode === "In-Person");
+    if (activeTab === "Networking") return ALL_EVENTS.filter((e) => e.category === "Networking");
+    if (activeTab === "Career") return ALL_EVENTS.filter((e) => e.category === "Career");
+    return ALL_EVENTS;
   };
   const filtered = getFiltered();
 
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 750);
-    return () => clearTimeout(t);
-  }, []);
-
-  const handleFilterChange = (tab: FilterTab) => {
-    setActiveTab(tab);
-    setFilterKey((k) => k + 1);
-  };
-
+  const handleFilterChange = (tab: FilterTab) => { setActiveTab(tab); setFilterKey((k) => k + 1); };
   const handleRSVP = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (rsvpStates[id] && rsvpStates[id] !== "idle") return;
     setRsvpStates((p) => ({ ...p, [id]: "loading" }));
     setTimeout(() => setRsvpStates((p) => ({ ...p, [id]: "done" })), 1600);
   };
-
   const handleHostSubmit = (e: React.MouseEvent) => {
     e.preventDefault();
     if (hostSubmit !== "idle") return;
@@ -445,593 +682,307 @@ function Events() {
     setTimeout(() => setHostSubmit("done"), 1800);
   };
 
-  const galleryYears = ["All", "2025", "2024", "2023"];
-  const filteredGallery = galleryYear === "All" ? pastEventsGallery : pastEventsGallery.filter((g) => g.year === galleryYear);
-
   const tabIcons: Partial<Record<FilterTab, React.ReactNode>> = {
     Online: <Wifi className="h-3.5 w-3.5" />,
-    Offline: <Building2 className="h-3.5 w-3.5" />,
+    "In-Person": <Building2 className="h-3.5 w-3.5" />,
     Networking: <Network className="h-3.5 w-3.5" />,
     Career: <Briefcase className="h-3.5 w-3.5" />,
   };
+
+  const stats = [
+    { val: "16",      label: "Events This Year",    icon: Calendar },
+    { val: "85",      label: "Countries Reached",   icon: Globe },
+    { val: "25K+",    label: "Alumni Joined",        icon: Users },
+    { val: "RM 2.4M", label: "Scholarships Raised", icon: TrendingUp },
+  ];
 
   return (
     <>
       <style>{`
         @keyframes modalIn {
-          from { opacity: 0; transform: scale(0.93) translateY(14px); }
+          from { opacity: 0; transform: scale(0.94) translateY(16px); }
           to   { opacity: 1; transform: scale(1) translateY(0); }
         }
-        @keyframes fadeUpE {
-          from { opacity: 0; transform: translateY(20px); }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(18px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        @keyframes filterFade {
-          from { opacity: 0; transform: translateY(10px); }
+        @keyframes cardIn {
+          from { opacity: 0; transform: translateY(14px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        .filter-fade { animation: filterFade 280ms ease-out both; }
-        .hero-fade-1 { animation: fadeUpE 380ms ease-out 80ms  both; }
-        .hero-fade-2 { animation: fadeUpE 380ms ease-out 200ms both; }
-        .hero-fade-3 { animation: fadeUpE 380ms ease-out 320ms both; }
-        .hero-fade-4 { animation: fadeUpE 380ms ease-out 440ms both; }
-
-        .event-card-main {
-          transition: transform 280ms ease-out, box-shadow 280ms ease-out, border-color 280ms ease-out;
-          cursor: pointer;
-        }
-        .event-card-main:hover {
-          transform: translateY(-6px) scale(1.005);
-          box-shadow: 0 20px 48px rgba(190,24,55,0.10), 0 6px 18px rgba(0,0,0,0.07);
-          border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
-        }
-        .rsvp-btn-main {
-          transition: transform 240ms ease-out, box-shadow 240ms ease-out;
-        }
-        .rsvp-btn-main:not(:disabled):hover {
-          transform: scale(1.05);
-          box-shadow: 0 6px 20px -3px color-mix(in srgb, var(--color-primary) 50%, transparent);
-        }
-        .gallery-card {
-          transition: transform 280ms ease-out, box-shadow 280ms ease-out;
-          cursor: pointer;
-        }
-        .gallery-card:hover {
-          transform: translateY(-4px) scale(1.02);
-          box-shadow: 0 16px 40px rgba(0,0,0,0.25);
-        }
-        .gallery-card:hover .gallery-overlay {
-          opacity: 1;
-        }
-        .gallery-overlay {
-          opacity: 0;
-          transition: opacity 280ms ease-out;
-        }
+        .h1 { animation: fadeUp 380ms ease-out 60ms  both; }
+        .h2 { animation: fadeUp 380ms ease-out 140ms both; }
+        .h3 { animation: fadeUp 380ms ease-out 220ms both; }
+        .h4 { animation: fadeUp 380ms ease-out 300ms both; }
+        .h5 { animation: fadeUp 380ms ease-out 380ms both; }
       `}</style>
 
-      {/* ── S1: EVENT HERO / BANNER ──────────────────────────────────── */}
-      <section
-        id="event-hero"
-        className="relative overflow-hidden py-36 lg:py-48"
-        style={{ background: "linear-gradient(160deg, #7f0d18 0%, #1a0306 60%, #0d0d14 100%)" }}
-      >
-        {/* Texture */}
-        <div
-          className="absolute inset-0 opacity-[0.05] pointer-events-none"
-          style={{
-            backgroundImage: "repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)",
-            backgroundSize: "24px 24px",
-          }}
-        />
-        {/* Glow */}
-        <div
-          className="absolute -top-24 -right-24 w-[700px] h-[700px] rounded-full opacity-20 pointer-events-none"
-          style={{ background: "radial-gradient(circle, hsl(var(--primary)) 0%, transparent 70%)" }}
-        />
-        <div
-          className="absolute -bottom-32 -left-32 w-[500px] h-[500px] rounded-full opacity-10 pointer-events-none"
-          style={{ background: "radial-gradient(circle, #f59e0b 0%, transparent 70%)" }}
-        />
+      {/* ── HERO — taller ── */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1920&q=80"
+            alt="Alumni event"
+            className="w-full h-full object-cover"
+          />
+          <div
+            className="absolute inset-0"
+            style={{ background: "linear-gradient(135deg, rgba(127,13,24,0.96) 0%, rgba(26,3,6,0.90) 50%, rgba(13,13,20,0.85) 100%)" }}
+          />
+        </div>
 
-        <div className="container-page relative z-10">
+        {/* ↓ pt-28 pb-28 on mobile, pt-36 pb-32 on desktop — ~30px taller than before */}
+        <div className="relative z-10 container-page pt-28 pb-28 lg:pt-36 lg:pb-32">
           <div className="max-w-3xl">
-            <span className="hero-fade-1 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-amber-400 mb-6">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            <span className="h1 inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.22em] text-amber-400 mb-4">
+              <span className="w-2 h-2 bg-amber-400 animate-pulse rounded-full" />
               Featured Event
             </span>
 
             <h1
-              className="hero-fade-2 font-display text-5xl md:text-7xl font-bold text-white leading-[0.95]"
-              style={{ letterSpacing: "-0.025em" }}
+              className="h2 font-display text-4xl md:text-6xl font-black text-white leading-[0.95]"
+              style={{ letterSpacing: "-0.03em" }}
             >
-              {featuredEvent?.title ?? "Global Alumni"}{" "}
-              <span
-                style={{
-                  background: "linear-gradient(90deg, #f59e0b, #ef4444)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                2026.
-              </span>
+              {featuredEvent.title}
             </h1>
 
-            <p className="hero-fade-3 mt-6 text-white/65 text-lg leading-relaxed max-w-xl">
-              {featuredEvent?.description ?? "The largest Lincoln alumni gathering of the year — connect with 1,000+ graduates from 40+ industries across the globe."}
+            <p className="h3 mt-3 text-white/55 text-sm leading-relaxed max-w-xl">
+              {featuredEvent.description}
             </p>
 
-            <div className="hero-fade-3 mt-5 flex flex-wrap items-center gap-4 text-sm text-white/60">
+            <div className="h3 mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs text-white/50 font-medium">
               <span className="flex items-center gap-1.5">
-                <Calendar className="h-4 w-4 text-amber-400" />
-                {featuredEvent ? new Date(featuredEvent.date).toDateString() : "TBD"}
+                <Calendar className="h-3.5 w-3.5 text-amber-400" />
+                {new Date(featuredEvent.date).toDateString()}
               </span>
+              <span className="text-white/20">·</span>
               <span className="flex items-center gap-1.5">
-                <MapPin className="h-4 w-4 text-amber-400" />
-                {featuredEvent?.location ?? "Kuala Lumpur, Malaysia"}
+                <Clock className="h-3.5 w-3.5 text-amber-400" />
+                {featuredEvent.time}
               </span>
+              <span className="text-white/20">·</span>
               <span className="flex items-center gap-1.5">
-                <Users className="h-4 w-4 text-amber-400" />
-                {featuredEvent?.speakers?.join(" · ")}
+                <MapPin className="h-3.5 w-3.5 text-amber-400" />
+                {featuredEvent.location}
               </span>
             </div>
 
-            {/* Countdown */}
-            <div className="hero-fade-4 mt-10 flex flex-wrap gap-3">
+            {/* Countdown — slightly rounded */}
+            <div className="h4 mt-8 flex gap-2">
               {[
-                { val: countdown.days, label: "Days" },
-                { val: countdown.hours, label: "Hours" },
+                { val: countdown.days,    label: "Days" },
+                { val: countdown.hours,   label: "Hrs" },
                 { val: countdown.minutes, label: "Min" },
                 { val: countdown.seconds, label: "Sec" },
               ].map(({ val, label }) => (
                 <div
                   key={label}
-                  className="flex flex-col items-center justify-center w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border border-white/15"
+                  className="w-[74px] h-[74px] rounded-xl bg-white/10 border border-white/15 flex flex-col items-center justify-center"
                 >
-                  <span className="font-display text-3xl font-bold text-white tabular-nums leading-none">
+                  <span className="font-display text-2xl font-black text-white tabular-nums leading-none">
                     {String(val).padStart(2, "0")}
                   </span>
-                  <span className="text-[10px] uppercase tracking-widest text-white/45 mt-1 font-medium">{label}</span>
+                  <span className="text-[9px] uppercase tracking-widest text-white/40 mt-1 font-bold">{label}</span>
                 </div>
               ))}
             </div>
 
-            <div className="hero-fade-4 mt-10 flex flex-wrap gap-3">
+            {/* CTAs */}
+            <div className="h5 mt-8 flex gap-3">
               <button
                 onClick={() => setSelectedEvent(featuredEvent)}
-                className="group inline-flex items-center gap-2.5 rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-gray-900 hover:bg-amber-400 transition-all shadow-xl hover:-translate-y-0.5"
+                className="group inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-sm font-black text-red-800 hover:bg-amber-400 transition-all shadow-xl hover:-translate-y-0.5"
               >
-                Register Now
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                Register Now <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </button>
               <button
-                onClick={() => {
-                  const el = document.getElementById("events-grid");
-                  el?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold text-white hover:bg-white/10 transition-all"
+                onClick={() => document.getElementById("events-grid")?.scrollIntoView({ behavior: "smooth" })}
+                className="inline-flex items-center gap-2 rounded-xl border-2 border-white/20 px-7 py-3.5 text-sm font-bold text-white hover:bg-white/10 transition-all"
               >
-                Browse All Events
+                Browse All
               </button>
             </div>
           </div>
         </div>
+
+        {/* Stats bar */}
+        <div className="relative z-10 border-t border-white/10 bg-black/30 backdrop-blur-sm">
+          <div className="container-page py-5 grid grid-cols-2 md:grid-cols-4 gap-6">
+            {stats.map(({ val, label, icon: Icon }) => (
+              <div key={label} className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-red-700/40 border border-red-500/30 flex items-center justify-center shrink-0">
+                  <Icon className="h-4 w-4 text-red-300" />
+                </div>
+                <div>
+                  <div className="font-display text-lg font-black text-white leading-none">{val}</div>
+                  <div className="text-[10px] text-white/40 font-semibold mt-0.5">{label}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* ── S2: FILTER TABS ──────────────────────────────────────────── */}
-      <section
-        id="filter-tabs"
-        className="sticky top-0 z-30 border-b border-border"
-        style={{ background: "hsl(var(--background)/0.95)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
-      >
+      {/* ── FILTER TABS ── */}
+      <div className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur-md">
         <div className="container-page">
-          <div className="flex items-center gap-1.5 overflow-x-auto py-3 scrollbar-hide no-scrollbar">
+          <div className="flex items-center gap-1.5 overflow-x-auto py-3 no-scrollbar">
             {FILTER_TABS.map((tab) => (
               <button
                 key={tab}
                 onClick={() => handleFilterChange(tab)}
-                className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-all shrink-0
-                  ${activeTab === tab
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                  }`}
+                className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-4 py-2 text-xs font-bold transition-all shrink-0 ${
+                  activeTab === tab
+                    ? "bg-red-700 text-white"
+                    : "bg-neutral-100 text-neutral-500 hover:bg-red-50 hover:text-red-700"
+                }`}
               >
                 {tabIcons[tab]}
                 {tab}
               </button>
             ))}
+            <span className="ml-auto shrink-0 text-xs font-bold text-neutral-400 pr-1">
+              {filtered.length} events
+            </span>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* ── S3: UPCOMING EVENTS GRID ─────────────────────────────────── */}
-      <section id="events-grid" className="container-page py-20">
-        <div className="flex items-end justify-between flex-wrap gap-6 mb-12">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">
+      {/* ── EVENTS GRID ── */}
+      <section id="events-grid" className="bg-neutral-50 py-16">
+        <div className="container-page">
+          <div className="mb-10">
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-red-700 block mb-2">
               {activeTab === "All" ? "All Events" : activeTab}
             </span>
-            <h2
-              className="font-display text-4xl md:text-5xl font-bold"
-              style={{ letterSpacing: "-0.02em" }}
-            >
+            <h2 className="font-display text-4xl md:text-5xl font-black text-neutral-900" style={{ letterSpacing: "-0.025em" }}>
               {activeTab === "Past" ? "Past Events." : "Upcoming Events."}
             </h2>
-            <p className="text-muted-foreground mt-2 text-sm">
+            <p className="text-neutral-400 mt-1.5 text-sm font-medium">
               {filtered.length} event{filtered.length !== 1 ? "s" : ""} found
             </p>
           </div>
-        </div>
 
-        <div key={filterKey} className="filter-fade grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {loading
-            ? Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="rounded-2xl border border-border bg-card overflow-hidden" style={{ animation: `filterFade 300ms ease-out ${i * 60}ms both` }}>
-                  <div className="h-44 bg-muted animate-pulse" />
-                  <div className="p-6 space-y-3">
-                    <div className="h-5 w-3/4 bg-muted animate-pulse rounded-lg" />
-                    <div className="h-4 w-full bg-muted animate-pulse rounded-lg" />
-                    <div className="h-4 w-2/3 bg-muted animate-pulse rounded-lg" />
-                    <div className="h-10 w-28 bg-muted animate-pulse rounded-full mt-4" />
-                  </div>
-                </div>
-              ))
-            : filtered.map((e, i) => {
-                const rsvp = rsvpStates[e.id] ?? "idle";
-                const gradients = [
-                  "linear-gradient(135deg, hsl(350 85% 28%) 0%, hsl(220 40% 18%) 100%)",
-                  "linear-gradient(135deg, hsl(220 40% 16%) 0%, hsl(350 60% 23%) 100%)",
-                  "linear-gradient(135deg, hsl(28 80% 32%) 0%, hsl(350 85% 26%) 100%)",
-                  "linear-gradient(135deg, hsl(260 50% 22%) 0%, hsl(220 40% 16%) 100%)",
-                  "linear-gradient(135deg, hsl(180 40% 18%) 0%, hsl(220 50% 16%) 100%)",
-                  "linear-gradient(135deg, hsl(350 85% 24%) 0%, hsl(28 70% 28%) 100%)",
-                ];
-                return (
-                  <div
-                    key={e.id}
-                    className="event-card-main rounded-2xl border border-border bg-card overflow-hidden"
-                    style={{ animation: `filterFade 320ms ease-out ${i * 60}ms both` }}
-                    onClick={() => setSelectedEvent(e)}
-                  >
-                    {/* Date banner */}
-                    <div className="relative h-44 flex items-end p-5" style={{ background: gradients[i % 6] }}>
-                      <div
-                        className="absolute inset-0 opacity-[0.04] pointer-events-none"
-                        style={{
-                          backgroundImage: "repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)",
-                          backgroundSize: "20px 20px",
-                        }}
-                      />
-                      <div className="bg-white/12 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-2.5 text-white z-10 relative">
-                        <div className="font-display text-3xl font-bold leading-none">
-                          {new Date(e.date).getDate()}
-                        </div>
-                        <div className="text-[10px] uppercase tracking-widest font-semibold opacity-80 mt-0.5">
-                          {new Date(e.date).toLocaleString("en", { month: "long", year: "numeric" })}
-                        </div>
-                      </div>
-                      <span className="absolute top-4 right-4 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-white/15 border border-white/20 text-white">
-                        {e.mode === "Online" ? <Wifi className="h-2.5 w-2.5" /> : <Building2 className="h-2.5 w-2.5" />}
-                        {e.mode}
-                      </span>
-                      {i === 0 && (
-                        <span className="absolute top-4 left-4 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-amber-400/20 border border-amber-400/30 text-amber-300">
-                          Featured
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="p-6">
-                      <h3
-                        className="font-display text-xl font-semibold leading-snug hover:text-primary transition-colors"
-                        style={{ letterSpacing: "-0.01em" }}
-                      >
-                        {e.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1.5 font-medium">
-                        <MapPin className="h-3 w-3" /> {e.location}
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-3 leading-relaxed line-clamp-2">
-                        {e.description}
-                      </p>
-
-                      {/* Speakers chips */}
-                      <div className="mt-4 flex flex-wrap gap-1.5">
-                        {e.speakers.slice(0, 2).map((s) => (
-                          <span
-                            key={s}
-                            className="inline-flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded-full border border-border bg-muted text-muted-foreground"
-                          >
-                            <Mic2 className="h-2.5 w-2.5" /> {s}
-                          </span>
-                        ))}
-                        {e.speakers.length > 2 && (
-                          <span className="text-[10px] text-muted-foreground px-2 py-1">+{e.speakers.length - 2} more</span>
-                        )}
-                      </div>
-
-                      <div className="mt-5 flex items-center justify-between">
-                        <button
-                          className={`rsvp-btn-main rounded-full px-5 py-2.5 text-sm font-semibold transition-all
-                            ${rsvp === "done" ? "bg-emerald-500/15 text-emerald-600 border border-emerald-400/30" : "bg-primary text-primary-foreground"}`}
-                          onClick={(ev) => handleRSVP(ev, e.id)}
-                          disabled={rsvp !== "idle"}
-                        >
-                          {rsvp === "idle" && "RSVP"}
-                          {rsvp === "loading" && (
-                            <span className="flex items-center gap-1.5">
-                              <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                              Saving…
-                            </span>
-                          )}
-                          {rsvp === "done" && (
-                            <span className="flex items-center gap-1.5">
-                              <Check className="h-3.5 w-3.5" /> Reserved
-                            </span>
-                          )}
-                        </button>
-                        <button
-                          className="text-xs font-semibold text-primary inline-flex items-center gap-1 hover:gap-2 transition-all group"
-                          onClick={(ev) => { ev.stopPropagation(); setSelectedEvent(e); }}
-                        >
-                          Details <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-        </div>
-
-        {!loading && filtered.length === 0 && (
-          <div className="text-center py-20 text-muted-foreground">
-            <Calendar className="h-10 w-10 mx-auto mb-4 opacity-30" />
-            <p className="font-semibold">No events found for this filter.</p>
-          </div>
-        )}
-      </section>
-
-      {/* ── S4: EVENT DETAIL DRAWER/MODAL — rendered at root ─────────── */}
-
-      {/* ── S5: CALENDAR VIEW ────────────────────────────────────────── */}
-      <section
-        id="calendar"
-        className="py-20"
-        style={{ background: "hsl(var(--muted))" }}
-      >
-        <div className="container-page">
-          <div className="flex items-end justify-between flex-wrap gap-6 mb-12">
-            <div>
-              <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">
-                Calendar View
-              </span>
-              <h2
-                className="font-display text-4xl md:text-5xl font-bold"
-                style={{ letterSpacing: "-0.02em" }}
-              >
-                Events at a glance.
-              </h2>
-              <p className="text-muted-foreground mt-2 max-w-md text-sm leading-relaxed">
-                Click any highlighted date to see event details. Navigate between months to explore the full schedule.
-              </p>
-            </div>
-          </div>
-          <CalendarView events={events} onSelectEvent={(e) => setSelectedEvent(e)} />
-        </div>
-      </section>
-
-      {/* ── S6: PAST EVENTS GALLERY ──────────────────────────────────── */}
-      <section id="past-events" className="container-page py-20">
-        <div className="flex items-end justify-between flex-wrap gap-6 mb-12">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">
-              Past Events
-            </span>
-            <h2
-              className="font-display text-4xl md:text-5xl font-bold"
-              style={{ letterSpacing: "-0.02em" }}
-            >
-              Memories made together.
-            </h2>
-          </div>
-          {/* Year filter */}
-          <div className="flex items-center gap-2">
-            {galleryYears.map((y) => (
-              <button
-                key={y}
-                onClick={() => setGalleryYear(y)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition-all
-                  ${galleryYear === y ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-primary/10 hover:text-primary"}`}
-              >
-                {y}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Photo masonry-style grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {filteredGallery.map((g, i) => (
-            <div
-              key={i}
-              className={`gallery-card relative rounded-2xl overflow-hidden ${i === 0 || i === 3 ? "row-span-2 min-h-[320px]" : "min-h-[160px]"}`}
-              style={{ background: `linear-gradient(135deg, ${g.gradient.replace("from-", "").replace(" to-", ", ")})` }}
-            >
-              <div
-                className="absolute inset-0 opacity-[0.06] pointer-events-none"
-                style={{
-                  backgroundImage: "repeating-linear-gradient(-45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)",
-                  backgroundSize: "20px 20px",
-                }}
+          <div key={filterKey} className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filtered.map((e, i) => (
+              <EventCard
+                key={e.id}
+                event={e}
+                index={i}
+                onSelect={setSelectedEvent}
+                rsvpState={rsvpStates[e.id] ?? "idle"}
+                onRSVP={handleRSVP}
               />
-              {/* Overlay on hover */}
-              <div className="gallery-overlay absolute inset-0 bg-black/40 flex items-center justify-center">
-                <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-                  <ImageIcon className="h-5 w-5 text-white" />
-                </div>
-              </div>
-
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <span className={`inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border mb-2 ${g.tagColor}`}>
-                  {g.tag}
-                </span>
-                <h3 className="font-display text-sm font-bold text-white leading-snug">{g.title}</h3>
-                <p className="text-[10px] text-white/60 mt-0.5 flex items-center gap-1">
-                  <Users className="h-2.5 w-2.5" /> {g.attendees} attendees · {g.year}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Video highlights */}
-        <div className="mt-14">
-          <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-6">
-            Video Highlights
-          </span>
-          <div className="grid md:grid-cols-3 gap-5">
-            {HIGHLIGHT_VIDEOS.map((v, i) => (
-              <div
-                key={i}
-                className="group rounded-2xl border border-border bg-card p-5 flex items-center gap-4 cursor-pointer hover:border-primary/30 hover:shadow-elegant transition-all hover:-translate-y-0.5"
-              >
-                <div className="w-12 h-12 shrink-0 rounded-xl bg-primary flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                  <Play className="h-5 w-5 text-white translate-x-0.5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-semibold leading-snug truncate">{v.title}</h4>
-                  <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                    <Clock className="h-3 w-3" /> {v.duration}
-                    <span className="w-1 h-1 rounded-full bg-border" />
-                    {v.views} views
-                  </p>
-                </div>
-              </div>
             ))}
           </div>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-24 text-neutral-400">
+              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-20" />
+              <p className="font-bold text-lg">No events found for this filter.</p>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* ── S7: HOST AN EVENT CTA ─────────────────────────────────────── */}
-      <section
-        id="host-event"
-        className="py-20"
-        style={{ background: "#0F1420" }}
-      >
+      {/* ── CALENDAR ── */}
+      <section id="calendar" className="py-20 bg-white">
+        <div className="container-page">
+          <div className="mb-10">
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-red-700 block mb-2">Calendar View</span>
+            <h2 className="font-display text-4xl md:text-5xl font-black text-neutral-900" style={{ letterSpacing: "-0.025em" }}>
+              Events at a glance.
+            </h2>
+            <p className="text-neutral-400 mt-1.5 max-w-md text-sm">Click any highlighted date to see event details.</p>
+          </div>
+          <BoldCalendar events={ALL_EVENTS} onSelectEvent={setSelectedEvent} />
+        </div>
+      </section>
+
+      {/* ── HOST AN EVENT ── */}
+      <section className="py-20 bg-neutral-950">
         <div className="container-page">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left: copy */}
             <div>
-              <span className="text-xs font-semibold uppercase tracking-[0.15em] text-amber-400 block mb-4">
-                Propose an Event
-              </span>
-              <h2
-                className="font-display text-4xl md:text-5xl font-bold text-white"
-                style={{ letterSpacing: "-0.02em" }}
-              >
+              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-amber-400 block mb-4">Propose an Event</span>
+              <h2 className="font-display text-4xl md:text-5xl font-black text-white" style={{ letterSpacing: "-0.025em" }}>
                 Have an idea?{" "}
-                <span
-                  style={{
-                    background: "linear-gradient(90deg, #f59e0b, #ef4444)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
-                >
+                <span style={{ background: "linear-gradient(90deg, #f59e0b, #ef4444)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                   Host it.
                 </span>
               </h2>
-              <p className="mt-5 text-white/60 leading-relaxed max-w-md">
-                Alumni can propose reunions, workshops, networking nights, panel discussions, or online webinars.
-                Submit your idea and the events team will get back to you within 5 working days.
+              <p className="mt-4 text-white/50 leading-relaxed max-w-md text-sm">
+                Alumni can propose reunions, workshops, networking nights, or online webinars. Submit your idea and the events team will respond within 5 working days.
               </p>
-
-              <ul className="mt-8 space-y-4">
+              <ul className="mt-7 space-y-3.5">
                 {[
-                  { icon: Network, text: "Networking nights — connect alumni in your city" },
-                  { icon: Mic2, text: "Panel talks — share your career journey with students" },
+                  { icon: Network,   text: "Networking nights — connect alumni in your city" },
+                  { icon: Mic2,      text: "Panel talks — share your career journey" },
                   { icon: Briefcase, text: "Industry workshops — hands-on skill sessions" },
-                  { icon: Wifi, text: "Virtual webinars — reach alumni across 85 countries" },
+                  { icon: Wifi,      text: "Virtual webinars — reach 85+ countries" },
                 ].map(({ icon: Icon, text }) => (
                   <li key={text} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center shrink-0">
                       <Icon className="h-4 w-4 text-amber-400" />
                     </div>
-                    <span className="text-sm text-white/70">{text}</span>
+                    <span className="text-sm text-white/55">{text}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Right: form */}
-            <div
-              className="rounded-2xl p-8 border border-white/10"
-              style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(12px)" }}
-            >
+            <div className="rounded-2xl p-8 border border-white/10 bg-white/5 backdrop-blur-sm">
               {hostSubmit === "done" ? (
-                <div className="text-center py-10">
-                  <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center mx-auto mb-5">
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center mx-auto mb-5">
                     <Check className="h-7 w-7 text-emerald-400" />
                   </div>
-                  <h3 className="font-display text-xl font-bold text-white mb-2">Proposal Received!</h3>
-                  <p className="text-white/60 text-sm leading-relaxed">
-                    Our events team will review your submission and reach out within 5 working days.
-                  </p>
+                  <h3 className="font-display text-xl font-black text-white mb-2">Proposal Received!</h3>
+                  <p className="text-white/50 text-sm">Our events team will be in touch within 5 working days.</p>
                 </div>
               ) : (
                 <>
-                  <h3 className="font-display text-xl font-bold text-white mb-6">Submit Your Event Idea</h3>
+                  <h3 className="font-display text-xl font-black text-white mb-6">Submit Your Event Idea</h3>
                   <div className="space-y-4">
+                    {[
+                      { label: "Your Name",     val: hostName,  set: setHostName,  ph: "e.g. Ahmad Fauzi", type: "text" },
+                      { label: "Email Address", val: hostEmail, set: setHostEmail, ph: "you@example.com",   type: "email" },
+                    ].map(({ label, val, set, ph, type }) => (
+                      <div key={label}>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1.5 block">{label}</label>
+                        <input
+                          type={type}
+                          value={val}
+                          onChange={(e) => set(e.target.value)}
+                          placeholder={ph}
+                          className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/25 outline-none focus:border-red-500/50 focus:ring-2 focus:ring-red-500/20 transition-all"
+                        />
+                      </div>
+                    ))}
                     <div>
-                      <label className="text-xs font-semibold uppercase tracking-widest text-white/50 mb-1.5 block">Your Name</label>
-                      <input
-                        type="text"
-                        value={hostName}
-                        onChange={(e) => setHostName(e.target.value)}
-                        placeholder="e.g. Ahmad Fauzi"
-                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold uppercase tracking-widest text-white/50 mb-1.5 block">Email Address</label>
-                      <input
-                        type="email"
-                        value={hostEmail}
-                        onChange={(e) => setHostEmail(e.target.value)}
-                        placeholder="you@example.com"
-                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold uppercase tracking-widest text-white/50 mb-1.5 block">Event Idea</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1.5 block">Event Idea</label>
                       <textarea
                         value={hostIdea}
                         onChange={(e) => setHostIdea(e.target.value)}
                         rows={4}
-                        placeholder="Describe your event — format, expected audience, preferred date, location..."
-                        className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                        placeholder="Describe your event — format, audience, preferred date, location..."
+                        className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/25 outline-none focus:border-red-500/50 focus:ring-2 focus:ring-red-500/20 transition-all resize-none"
                       />
                     </div>
                     <button
                       onClick={handleHostSubmit}
                       disabled={hostSubmit !== "idle" || !hostName || !hostEmail || !hostIdea}
-                      className="w-full rounded-full bg-primary text-white py-3.5 text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full rounded-lg bg-red-700 text-white py-4 text-sm font-black flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 hover:shadow-lg hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       {hostSubmit === "loading" ? (
-                        <>
-                          <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                          Submitting…
-                        </>
+                        <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Submitting…</>
                       ) : (
-                        <>
-                          <Send className="h-4 w-4" />
-                          Submit Proposal
-                        </>
+                        <><Send className="h-4 w-4" />Submit Proposal</>
                       )}
                     </button>
-                    <p className="text-center text-xs text-white/35">
-                      Or{" "}
-                      <Link to="/contact" className="text-amber-400 hover:underline">
-                        contact the events team directly →
-                      </Link>
+                    <p className="text-center text-xs text-white/30">
+                      Or <Link to="/contact" className="text-amber-400 hover:underline">contact the events team →</Link>
                     </p>
                   </div>
                 </>
@@ -1041,10 +992,7 @@ function Events() {
         </div>
       </section>
 
-      {/* ── S4 MODAL (rendered at root level) ───────────────────────── */}
-      {selectedEvent && (
-        <EventModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
-      )}
+      {selectedEvent && <EventModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
     </>
   );
 }
