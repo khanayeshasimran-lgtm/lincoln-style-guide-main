@@ -1,8 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Users, Globe2, Briefcase, Calendar, Sparkles, Quote } from "lucide-react";
+import {
+  ArrowRight, Users, Globe2, Briefcase, Calendar,
+  Sparkles, MapPin, GraduationCap, Heart,
+  ChevronRight, Star, Newspaper, Check,
+  Mail, User, Phone,
+} from "lucide-react";
 import heroImg from "@/assets/hero-alumni.jpg";
 import { alumni, events, stats } from "@/data/alumni";
 import { AlumniCard } from "@/components/site/AlumniCard";
+import { useEffect, useRef, useState } from "react";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -11,346 +17,1194 @@ export const Route = createFileRoute("/")({
       { title: "Lincoln Alumni Network — Stay Connected Forever" },
       {
         name: "description",
-        content:
-          "Join 25,000+ Lincoln University College alumni across 85 countries. Network, mentor, and grow together.",
+        content: "Join 25,000+ Lincoln University College alumni across 85 countries. Network, mentor, and grow together.",
       },
     ],
   }),
 });
 
+// ── Animated Counter ──────────────────────────────────────────────────────────
+function useCountUp(target: number, duration = 2000, start = false) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    let startTime: number | null = null;
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(ease * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [start, target, duration]);
+  return count;
+}
+
+// ── News data ─────────────────────────────────────────────────────────────────
+const newsItems = [
+  {
+    tag: "Achievement",
+    tagColor: "bg-amber-500/15 text-amber-600 border-amber-300/40",
+    date: "May 2026",
+    title: "LUC Alumni Ranked in Forbes Asia 30 Under 30",
+    excerpt: "Three Lincoln graduates recognized for breakthrough innovations in biotech, fintech, and sustainable energy.",
+    readTime: "3 min read",
+  },
+  {
+    tag: "Campus",
+    tagColor: "bg-red-500/10 text-red-600 border-red-300/40",
+    date: "Apr 2026",
+    title: "New Alumni Scholarship Fund Raises RM 2.4 Million",
+    excerpt: "The annual alumni fundraising gala exceeded its target, enabling 48 new merit scholarships.",
+    readTime: "4 min read",
+  },
+  {
+    tag: "Community",
+    tagColor: "bg-blue-500/10 text-blue-600 border-blue-300/40",
+    date: "Mar 2026",
+    title: "Global Mentorship Programme Expands to 12 Countries",
+    excerpt: "Alumni-led mentorship now connects 600+ mentors with students across medicine to digital design.",
+    readTime: "5 min read",
+  },
+];
+
+const topAlumni = [
+  { name: "Dr. Priya Nair",  role: "Cardiologist",      region: "Singapore", connects: 1240, initials: "PN", color: "from-red-600 to-rose-800",    x: "68%", y: "62%" },
+  { name: "Ahmad Fauzi",     role: "CEO, TechVentures", region: "Malaysia",  connects: 987,  initials: "AF", color: "from-amber-600 to-orange-700", x: "65%", y: "58%" },
+  { name: "Chen Wei Lin",    role: "Engineer, Google",  region: "USA",       connects: 834,  initials: "CW", color: "from-blue-700 to-indigo-800",  x: "20%", y: "38%" },
+];
+
+const notableMentors = [
+  { initials: "PN", name: "Dr. Priya Nair",    role: "Senior Cardiologist",   company: "Mount Elizabeth, SG", hex: "#C1121F" },
+  { initials: "AF", name: "Ahmad Fauzi",        role: "CEO & Co-Founder",      company: "TechVentures MY",     hex: "#D97706" },
+  { initials: "CW", name: "Chen Wei Lin",       role: "Software Engineer",     company: "Google, USA",         hex: "#1a73e8" },
+  { initials: "SR", name: "Sunita Rao",         role: "Investment Director",   company: "Goldman Sachs",       hex: "#374151" },
+  { initials: "MK", name: "Mohammed Khalid",    role: "Head of Product",       company: "Grab, Singapore",     hex: "#00B14F" },
+  { initials: "LP", name: "Dr. Lisa Park",      role: "Research Scientist",    company: "Pfizer, USA",         hex: "#0070C0" },
+  { initials: "RJ", name: "Raj Jeevan",         role: "VP Engineering",        company: "Shopee, SEA",         hex: "#EE4D2D" },
+  { initials: "NA", name: "Nurul Ain",          role: "Climate Policy Lead",   company: "UN Environment",      hex: "#2e7d32" },
+];
+
+const hiringCompanies = [
+  "Google","Goldman Sachs","Grab","Shopee","Pfizer","McKinsey","Deloitte",
+  "Shell","Petronas","AirAsia","Maybank","CIMB","Microsoft","Amazon",
+  "PwC","KPMG","Ernst & Young","Accenture","IBM","Unilever","Nestlé",
+];
+
+const advantageRows = [
+  { cat: "Community",      lincoln: "25,000+ active, engaged alumni",            others: "Generic social networks"        },
+  { cat: "Mentorship",     lincoln: "1,200+ mentors across 40+ industries",       others: "No structured matching"         },
+  { cat: "Career Support", lincoln: "Dedicated alumni job board & referrals",     others: "Generic job boards"             },
+  { cat: "Events",         lincoln: "120+ events per year, global & hybrid",      others: "Sporadic, ad-hoc meetups"       },
+  { cat: "Scholarships",   lincoln: "RM 2.4M fund, 48 scholarships awarded",      others: "Minimal alumni giving culture"  },
+  { cat: "Global Reach",   lincoln: "85 countries, 4 active global chapters",     others: "No dedicated chapter network"   },
+  { cat: "Exclusivity",    lincoln: "Verified alumni-only platform",              others: "Open to non-alumni"             },
+];
+
+const faqData: Record<string, { q: string; a: string }[]> = {
+  General: [
+    { q: "What is the Lincoln Alumni Network?", a: "The Lincoln Alumni Network connects 25,000+ graduates from Lincoln University College Malaysia across 85 countries. We facilitate mentorship, events, career opportunities, and lifelong community." },
+    { q: "Who can join?", a: "Any graduate of Lincoln University College Malaysia is eligible. Students in their final year can also register in advance." },
+  ],
+  Membership: [
+    { q: "How do I register?", a: "Fill in your details in the join form, verify your email, and your profile goes live within 24 hours. It's completely free." },
+    { q: "Is membership free?", a: "Yes — core membership is free forever." },
+  ],
+  Mentorship: [
+    { q: "How does the mentorship programme work?", a: "Alumni register as mentors specifying their industry and availability. Students and junior alumni are matched based on field and goals, with 1-on-1 sessions facilitated through the platform." },
+    { q: "How many mentors are available?", a: "We have 1,200+ active mentors across 40+ industries, from medicine to fintech to climate policy." },
+  ],
+  Events: [
+    { q: "What events does the network run?", a: "We run 120+ events per year including the Annual Gala, regional networking nights, industry panels, webinars, and campus homecoming days." },
+    { q: "Can I attend events from abroad?", a: "Yes — many events are hybrid or fully online. Our global chapters in Singapore, London, Melbourne, and Toronto also run local events." },
+  ],
+  Opportunities: [
+    { q: "Are there job opportunities through the network?", a: "Our alumni job board lists 500+ roles at any time, posted exclusively by alumni and partner companies who prefer Lincoln graduates." },
+    { q: "Do alumni offer scholarships?", a: "The Alumni Scholarship Fund has raised RM 2.4 million, enabling 48 merit scholarships in the last cycle alone." },
+  ],
+};
+
+// ── Testimonials data ─────────────────────────────────────────────────────────
+const testimonials = [
+  {
+    name: "Aisha Rahman",
+    role: "Senior Software Engineer, Google",
+    grad: "Computer Science, Class of 2019",
+    image: "https://randomuser.me/api/portraits/women/44.jpg",
+    quote: "The Lincoln Alumni Network connected me with a mentor at Google during my final year. Six months later, I had my dream offer. The community here is genuinely invested in each other's success.",
+  },
+  {
+    name: "James Okafor",
+    role: "Corporate Lawyer, Baker McKenzie",
+    grad: "Law, Class of 2016",
+    image: "https://randomuser.me/api/portraits/men/75.jpg",
+    quote: "I found my first international internship through an alumni referral. That one connection changed my entire career trajectory. Being part of this network is like having 25,000 people rooting for you.",
+  },
+  {
+    name: "Fatima Al-Rashidi",
+    role: "Research Fellow, WHO",
+    grad: "Medicine, Class of 2022",
+    image: "https://randomuser.me/api/portraits/women/89.jpg",
+    quote: "The mentorship programme paired me with a Lincoln alumna already working at WHO. Her guidance helped me secure my fellowship. I now mentor two students myself — the cycle of giving back is beautiful.",
+  },
+  {
+    name: "Raj Patel",
+    role: "CTO & Co-Founder, TechBridge",
+    grad: "Computer Science, Class of 2013",
+    image: "https://randomuser.me/api/portraits/men/91.jpg",
+    quote: "We hired 6 Lincoln alumni in our first year. The quality, the work ethic, the drive — it's consistent. The network didn't just help my career, it helped me build a company.",
+  },
+  {
+    name: "Kwame Asante",
+    role: "Chief Economist, World Bank",
+    grad: "Economics, Class of 2014",
+    image: "https://randomuser.me/api/portraits/men/41.jpg",
+    quote: "Attending the annual gala introduced me to three people who changed my professional life. Lincoln alumni don't just network — they genuinely open doors for each other.",
+  },
+];
+
+// ── Success stories data ──────────────────────────────────────────────────────
+const successStories = [
+  {
+    name: "Dr. Priya Nair",
+    image: "https://randomuser.me/api/portraits/women/68.jpg",
+    achievement: "Published in The Lancet before completing residency — connected to lead researcher via alumni network",
+  },
+  {
+    name: "Ahmad Fauzi",
+    image: "https://randomuser.me/api/portraits/men/32.jpg",
+    achievement: "Built a RM 12M tech venture, seed-funded through three Lincoln alumni investors he met at the annual gala",
+  },
+];
+
+const orbitAlumni = [
+  { image: "https://randomuser.me/api/portraits/women/44.jpg", angle: 330 },
+  { image: "https://randomuser.me/api/portraits/men/75.jpg",   angle: 60  },
+  { image: "https://randomuser.me/api/portraits/women/89.jpg", angle: 180 },
+  { image: "https://randomuser.me/api/portraits/men/41.jpg",   angle: 240 },
+];
+
+// ── Join process steps ────────────────────────────────────────────────────────
+const joinSteps = [
+  {
+    emoji: "📋",
+    title: "Register Your Profile",
+    color: "#C1121F",
+    bg: "#FDF0F0",
+    points: [
+      "Fill in your graduate details",
+      "Verify with your Lincoln email or student ID",
+      "Takes under 2 minutes — completely free",
+    ],
+    hasCta: true,
+  },
+  {
+    emoji: "✅",
+    title: "Get Verified",
+    color: "#B45309",
+    bg: "#FFFBEB",
+    points: [
+      "Our team confirms your alumni status within 24 hours",
+      "Receive your verified alumni badge",
+      "Unlock full directory access",
+    ],
+    hasCta: false,
+  },
+  {
+    emoji: "🤝",
+    title: "Connect & Mentor",
+    color: "#1D6F42",
+    bg: "#F0FDF4",
+    points: [
+      "Browse 25,000+ verified alumni profiles",
+      "Join the structured mentorship programme",
+      "Attend exclusive alumni events worldwide",
+    ],
+    hasCta: false,
+  },
+  {
+    emoji: "🚀",
+    title: "Grow Together",
+    color: "#1a56db",
+    bg: "#EFF6FF",
+    points: [
+      "Access the alumni-only job board & referrals",
+      "Apply for the alumni scholarship fund",
+      "Build your global professional legacy",
+    ],
+    hasCta: false,
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 function Home() {
   const featured = alumni.slice(0, 3);
   const upcoming = events.slice(0, 3);
 
+  const statsRef = useRef<HTMLDivElement>(null);
+  const [statsInView, setStatsInView] = useState(false);
+  useEffect(() => {
+    const el = statsRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setStatsInView(true); obs.disconnect(); } },
+      { threshold: 0.3 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const [activePin, setActivePin]         = useState<number | null>(0);
+  const [activeFaqTab, setActiveFaqTab]   = useState("Events");
+  const [openFaq, setOpenFaq]             = useState<number | null>(null);
+  const [testimonialIdx, setTestimonialIdx] = useState(0);
+
+  const prevTestimonial = () => setTestimonialIdx(i => (i - 1 + testimonials.length) % testimonials.length);
+  const nextTestimonial = () => setTestimonialIdx(i => (i + 1) % testimonials.length);
+
+  const visibleTestimonials = [
+    testimonials[testimonialIdx % testimonials.length],
+    testimonials[(testimonialIdx + 1) % testimonials.length],
+    testimonials[(testimonialIdx + 2) % testimonials.length],
+  ];
+
+  // Quick join form state
+  const [formData, setFormData]       = useState({ name: "", email: "", phone: "", type: "alumni" });
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [formLoading, setFormLoading]   = useState(false);
+
+  const handleSubmit = () => {
+    if (!formData.name || !formData.email) return;
+    setFormLoading(true);
+    setTimeout(() => { setFormLoading(false); setFormSubmitted(true); }, 1500);
+  };
+
+  // Stat counters
+  const c1 = useCountUp(25000, 2000, statsInView);
+  const c2 = useCountUp(85,    1800, statsInView);
+  const c3 = useCountUp(40,    1600, statsInView);
+  const c4 = useCountUp(120,   2200, statsInView);
+
+  // Rotating hero titles
+  const heroTitles = ["Medicine & Healthcare", "Technology & AI", "Finance & Banking", "Engineering", "Business & Ventures"];
+  const [titleIdx, setTitleIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setTitleIdx(i => (i + 1) % heroTitles.length), 2200);
+    return () => clearInterval(t);
+  }, []);
+
   return (
     <>
-      {/* ── Hero ─────────────────────────────────────────── */}
-      <section className="relative isolate overflow-hidden min-h-[92vh] flex items-center">
-        <img
-          src={heroImg}
-          alt="Lincoln University College graduation"
-          className="absolute inset-0 h-full w-full object-cover scale-105"
-          style={{ filter: "saturate(0.9) brightness(0.55)" }}
-          width={1600}
-          height={900}
-        />
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes ping2 {
+          0%   { transform: scale(1); opacity: 0.6; }
+          100% { transform: scale(2.5); opacity: 0; }
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+        .fu1 { animation: fadeUp 500ms ease-out 80ms  both; }
+        .fu2 { animation: fadeUp 500ms ease-out 200ms both; }
+        .fu3 { animation: fadeUp 500ms ease-out 320ms both; }
+        .fu4 { animation: fadeUp 500ms ease-out 440ms both; }
+        .fu5 { animation: fadeUp 500ms ease-out 560ms both; }
+        .fi  { animation: fadeIn 600ms ease-out 300ms both; }
+        .ping2 { animation: ping2 1.5s ease-out infinite; }
+        .orbit-ring { animation: spin-slow 18s linear infinite; }
+      `}</style>
 
-        {/* Layered overlays for cinematic depth */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(160deg, rgba(180,10,30,.55) 0%, rgba(8,10,22,.85) 60%, rgba(8,10,22,.95) 100%)",
-          }}
-        />
-        {/* Decorative diagonal stripe */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(-45deg, rgba(255,255,255,.015) 0px, rgba(255,255,255,.015) 1px, transparent 1px, transparent 40px)",
-          }}
-        />
+      {/* ── ANNOUNCEMENT BAR ─────────────────────────────────────────────────── */}
+      <div className="bg-amber-50 border-b border-amber-200 py-2.5 px-6 text-center text-sm flex items-center justify-center gap-4 flex-wrap">
+        <span>🎓 Annual Alumni Gala — <strong>14th June 2026, Kuala Lumpur</strong> — Limited seats remaining</span>
+        <Link to="/events" className="bg-primary text-white text-xs font-bold rounded-full px-4 py-1.5 hover:bg-primary/90 transition-colors">
+          Register Now
+        </Link>
+      </div>
 
-        <div className="container-page relative z-10 py-28 md:py-0">
-          <div className="max-w-4xl">
-            {/* Eyebrow */}
-            <div className="animate-fade-up">
-              <span className="pill bg-white/10 backdrop-blur text-white border border-white/20">
-                <Sparkles className="h-3 w-3 text-amber-400" />
+      {/* ── S1: SPLIT HERO ──────────────────────────────────────────────────── */}
+      <section className="relative flex min-h-[calc(100vh-74px)]">
+
+        {/* LEFT — Brand panel */}
+        <div
+          className="relative hidden lg:flex lg:w-[55%] flex-col justify-between p-12 xl:p-16 overflow-hidden"
+          style={{ background: "linear-gradient(150deg, #C1121F 0%, #8b0d16 35%, #0d0d14 80%)" }}
+        >
+          <div
+            className="absolute inset-0 pointer-events-none opacity-[0.035]"
+            style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+          />
+          <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full opacity-[0.08] pointer-events-none"
+            style={{ background: "radial-gradient(circle, #f59e0b, transparent 70%)" }} />
+          <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full opacity-[0.06] pointer-events-none"
+            style={{ background: "radial-gradient(circle, #fff, transparent 70%)" }} />
+          <div className="absolute inset-0 pointer-events-none">
+            <img src={heroImg} alt="" className="h-full w-full object-cover opacity-[0.12] mix-blend-luminosity" />
+          </div>
+
+          <div className="relative z-10">
+            <div className="fu1 inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3.5 py-1.5 mb-10">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-white/80">
                 Lincoln University College Malaysia
               </span>
             </div>
 
-            {/* Headline */}
-            <h1
-              className="mt-7 font-display text-6xl md:text-8xl font-bold leading-[0.95] text-white animate-fade-up-2"
-              style={{ letterSpacing: "-0.02em" }}
-            >
-              Stay{" "}
-              <em
-                className="not-italic"
-                style={{
-                  background: "linear-gradient(90deg, #f59e0b, #ef4444)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                Connected.
-              </em>
-              <br />
-              Forever.
+            <h1 className="fu2 font-display font-bold text-white leading-[0.92]"
+              style={{ fontSize: "clamp(2.8rem, 5vw, 4.5rem)", letterSpacing: "-0.025em" }}>
+              Your Network.<br />
+              <span style={{ background: "linear-gradient(90deg, #f59e0b 0%, #ef4444 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                Your Future.
+              </span>
             </h1>
 
-            <p className="mt-7 text-lg md:text-xl text-white/80 max-w-xl leading-relaxed animate-fade-up-3">
-              The global home for Lincoln graduates. Reconnect with classmates,
-              mentor the next generation, and unlock a worldwide network spanning{" "}
-              <strong className="text-white font-semibold">85 countries</strong>.
+            <p className="fu2 mt-3 font-display font-semibold text-amber-400"
+              style={{ fontSize: "clamp(1.1rem, 2vw, 1.4rem)", minHeight: "2rem" }}>
+              {heroTitles[titleIdx]}
             </p>
 
-            <div className="mt-10 flex flex-wrap gap-4 animate-fade-up-3">
-              <Link
-                to="/contact"
-                className="group inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-4 text-sm font-semibold text-gray-900 hover:bg-amber-400 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5"
-              >
-                Join Alumni Network
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                to="/directory"
-                className="inline-flex items-center gap-2.5 rounded-full border border-white/30 px-8 py-4 text-sm font-semibold text-white hover:bg-white/10 hover:border-white/60 backdrop-blur transition-all"
-              >
-                Explore Directory
-              </Link>
+            <p className="fu3 mt-4 text-white/65 text-base leading-relaxed max-w-md">
+              Join <strong className="text-white font-semibold">25,000+</strong> Lincoln graduates
+              connected across <strong className="text-white font-semibold">85 countries</strong>.
+              Reconnect, mentor, and grow — for life.
+            </p>
+
+            <ul className="fu4 mt-8 space-y-3">
+              {[
+                "Access the global alumni directory",
+                "Find mentors in your industry",
+                "Attend exclusive alumni events",
+                "Scholarships & career opportunities",
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-3 text-sm text-white/75">
+                  <div className="w-5 h-5 rounded-full bg-amber-400/20 border border-amber-400/40 flex items-center justify-center shrink-0">
+                    <Check className="h-2.5 w-2.5 text-amber-400" />
+                  </div>
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <div className="fu4 mt-8 flex gap-3 flex-wrap">
+              {[
+                { label: "Next Event",    val: "Annual Gala — 14 Jun 2026"  },
+                { label: "Network Size",  val: "25,000+ Members Global"     },
+              ].map((b) => (
+                <div key={b.label} className="bg-white/10 border border-white/20 rounded-xl px-4 py-3">
+                  <div className="text-[10px] text-white/50 uppercase tracking-wider mb-1">{b.label}</div>
+                  <div className="text-sm font-semibold text-white">{b.val}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative z-10 fu5">
+            <div className="grid grid-cols-4 gap-1 bg-white/[0.06] border border-white/10 rounded-2xl p-1">
+              {[
+                { n: "25K+",  l: "Alumni"     },
+                { n: "85",    l: "Countries"  },
+                { n: "40+",   l: "Industries" },
+                { n: "1.2K+", l: "Mentors"    },
+              ].map((s) => (
+                <div key={s.l} className="text-center py-3 px-2">
+                  <div className="font-display text-xl font-bold text-white" style={{ letterSpacing: "-0.02em" }}>{s.n}</div>
+                  <div className="text-[9px] uppercase tracking-widest text-white/40 font-medium mt-0.5">{s.l}</div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 mt-5">
+              <div className="flex -space-x-2">
+                {["PN","AF","CW","SR","MK"].map((ini, i) => (
+                  <div key={i}
+                    className="w-8 h-8 rounded-full border-2 border-white/20 flex items-center justify-center text-[10px] font-bold text-white"
+                    style={{ background: `hsl(${i * 40 + 350}, 60%, 35%)` }}>
+                    {ini}
+                  </div>
+                ))}
+              </div>
+              <p className="text-white/50 text-xs">
+                <strong className="text-white/80 font-semibold">340+</strong> joined this month
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Bottom fade */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-24 pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(to top, #f9fafb, transparent)",
-          }}
-        />
-      </section>
+        {/* RIGHT — Form panel */}
+        <div className="flex-1 flex flex-col justify-center px-6 py-12 md:px-12 lg:px-16 bg-background overflow-y-auto">
+          <div className="lg:hidden mb-8">
+            <div className="inline-flex items-center gap-2 bg-primary/8 text-primary rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-widest mb-4">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              Lincoln Alumni Network
+            </div>
+            <h1 className="font-display text-4xl font-bold leading-tight" style={{ letterSpacing: "-0.025em" }}>
+              Your Network.<br />
+              <span className="text-primary">Your Future.</span>
+            </h1>
+          </div>
 
-      {/* ── Stats Bar ────────────────────────────────────── */}
-      <section className="relative" style={{ background: "#161B26" }}>
-        <div className="container-page relative z-10">
-          <div className="grid grid-cols-2 md:grid-cols-4">
-            {[
-              { icon: Users, label: "Alumni Worldwide", value: stats.total, suffix: "+" },
-              { icon: Globe2, label: "Countries", value: stats.countries },
-              { icon: Briefcase, label: "Industries", value: stats.industries + "+" },
-              { icon: Calendar, label: "Events / Year", value: stats.events },
-            ].map(({ icon: Icon, label, value, suffix = "" }, i) => (
-              <div
-                key={label}
-                className="group relative flex flex-col items-center justify-center gap-2 py-10 px-6 text-center"
-                style={{
-                  borderRight:
-                    i < 3 ? "1px solid rgba(255,255,255,.08)" : undefined,
-                }}
-              >
-                <div className="absolute inset-0 bg-white/0 group-hover:bg-white/[.03] transition-colors rounded-none" />
-                <Icon className="h-5 w-5 text-amber-400 opacity-80" />
-                <div
-                  className="font-display text-4xl md:text-5xl font-bold text-white"
-                  style={{ letterSpacing: "-0.03em" }}
-                >
-                  {value}
-                  {suffix}
+          <div className="w-full max-w-sm mx-auto lg:mx-0 lg:max-w-md fi">
+            <div className="mb-8">
+              <h2 className="font-display text-2xl font-bold" style={{ letterSpacing: "-0.02em" }}>
+                Get Started Today
+              </h2>
+              <p className="text-muted-foreground text-sm mt-1.5">
+                Join the network — it takes less than 2 minutes.
+              </p>
+            </div>
+
+            {formSubmitted ? (
+              <div className="text-center py-10 px-6 rounded-2xl border border-emerald-200 bg-emerald-50">
+                <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                  <Check className="h-7 w-7 text-emerald-600" />
                 </div>
-                <div className="text-[11px] uppercase tracking-[0.12em] text-white/45 font-medium">
-                  {label}
+                <h3 className="font-bold text-lg mb-2">You're on the list!</h3>
+                <p className="text-sm text-muted-foreground mb-5">
+                  We'll send your access details to <strong>{formData.email}</strong> within 24 hours.
+                </p>
+                <Link to="/directory"
+                  className="inline-flex items-center gap-2 bg-primary text-white rounded-full px-6 py-2.5 text-sm font-semibold hover:bg-primary/90 transition-colors">
+                  Browse Alumni Directory <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-1.5 bg-muted p-1 rounded-xl">
+                  {[{ val: "alumni", label: "Alumni" }, { val: "student", label: "Student" }, { val: "visitor", label: "Visitor" }].map((t) => (
+                    <button key={t.val}
+                      onClick={() => setFormData(f => ({ ...f, type: t.val }))}
+                      className={`py-2 rounded-lg text-xs font-semibold transition-all ${formData.type === t.val ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}>
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <input type="text" placeholder="Full name" value={formData.name}
+                    onChange={e => setFormData(f => ({ ...f, name: e.target.value }))}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all" />
+                </div>
+
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <input type="email" placeholder="Email address" value={formData.email}
+                    onChange={e => setFormData(f => ({ ...f, email: e.target.value }))}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all" />
+                </div>
+
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                  <input type="tel" placeholder="Phone number (optional)" value={formData.phone}
+                    onChange={e => setFormData(f => ({ ...f, phone: e.target.value }))}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/8 transition-all" />
+                </div>
+
+                <button onClick={handleSubmit}
+                  disabled={!formData.name || !formData.email || formLoading}
+                  className="w-full flex items-center justify-center gap-2 bg-primary text-white rounded-xl py-3.5 text-sm font-semibold transition-all hover:bg-primary/90 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                  {formLoading ? (
+                    <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Joining…</>
+                  ) : (
+                    <>Join the Network <ArrowRight className="h-4 w-4" /></>
+                  )}
+                </button>
+
+                <p className="text-center text-xs text-muted-foreground">
+                  Already a member?{" "}
+                  <Link to="/auth" className="text-primary font-semibold hover:underline">Sign in →</Link>
+                </p>
+
+                <div className="flex items-center gap-3 my-1">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-[11px] text-muted-foreground">or continue with</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button className="flex items-center justify-center gap-2 border border-border rounded-xl py-2.5 text-sm font-medium hover:bg-muted transition-colors">
+                    <span className="text-base">🇬</span> Google
+                  </button>
+                  <button className="flex items-center justify-center gap-2 border border-blue-200 bg-blue-50/50 text-blue-700 rounded-xl py-2.5 text-sm font-medium hover:bg-blue-100/50 transition-colors">
+                    <span className="text-base">🔗</span> LinkedIn
+                  </button>
                 </div>
               </div>
-            ))}
+            )}
+
+            <div className="mt-8 pt-6 border-t border-border">
+              <div className="grid grid-cols-3 gap-3 text-center">
+                {[{ n: "25K+", l: "Members" }, { n: "4.9★", l: "Rated" }, { n: "Free", l: "Always" }].map((b) => (
+                  <div key={b.l} className="rounded-xl bg-muted/60 py-2.5 px-2">
+                    <div className="font-bold text-sm text-foreground">{b.n}</div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">{b.l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── Featured Alumni ───────────────────────────────── */}
-      <section className="container-page py-24">
+      {/* ── S2: Stats bar ───────────────────────────────────────────────────── */}
+      <section ref={statsRef} className="relative" style={{ background: "#161B26" }}>
+        <div className="grid grid-cols-2 md:grid-cols-4">
+          {[
+            { icon: Users,     label: "Alumni Worldwide", val: c1, suffix: "+" },
+            { icon: Globe2,    label: "Countries",        val: c2, suffix: ""  },
+            { icon: Briefcase, label: "Industries",       val: c3, suffix: "+" },
+            { icon: Calendar,  label: "Events / Year",    val: c4, suffix: ""  },
+          ].map(({ icon: Icon, label, val, suffix }, i) => (
+            <div key={label}
+              className="group relative flex flex-col items-center justify-center gap-2 py-10 px-6 text-center"
+              style={{ borderRight: i < 3 ? "1px solid rgba(255,255,255,.06)" : "none" }}>
+              <div className="absolute inset-0 bg-white/0 group-hover:bg-white/[.03] transition-colors" />
+              <Icon className="h-4 w-4 text-amber-400 opacity-70" />
+              <div className="font-display text-4xl md:text-5xl font-bold text-white tabular-nums" style={{ letterSpacing: "-0.03em" }}>
+                {statsInView ? val.toLocaleString() : "0"}{suffix}
+              </div>
+              <div className="text-[10px] uppercase tracking-[0.12em] text-white/40 font-medium">{label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── S2b: Experience Beyond Campus ───────────────────────────────────── */}
+      <section className="py-24" style={{ background: "#FFFBF0" }}>
+        <div className="container-page">
+          <div className="flex flex-col lg:flex-row gap-16 items-center">
+            <div className="lg:w-2/5 flex items-center justify-center">
+              <div className="relative w-80 h-80">
+                <div className="absolute inset-0 rounded-full"
+                  style={{ background: "radial-gradient(circle, #FFF3CD 0%, #FDE68A 65%, transparent 100%)" }} />
+                <img
+                  src="https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=400&q=80"
+                  alt="Alumni networking"
+                  className="absolute inset-4 w-[calc(100%-2rem)] h-[calc(100%-2rem)] object-cover rounded-full"
+                />
+                {[
+                  { label: "1,200+ Mentors", top: "30%", left: "-16%" },
+                  { label: "Global Network", top: "65%", right: "-14%" },
+                ].map((tag) => (
+                  <div key={tag.label}
+                    className="absolute bg-white border border-gray-200 rounded-full px-4 py-1.5 text-sm font-bold text-gray-700 shadow-md whitespace-nowrap"
+                    style={{ top: tag.top, left: tag.left, right: tag.right }}>
+                    {tag.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="lg:w-3/5">
+              <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">Life After Lincoln</span>
+              <h2 className="font-display text-4xl md:text-5xl font-bold mb-10" style={{ letterSpacing: "-0.02em" }}>
+                Experience Beyond<br />
+                <span className="text-primary">the Campus</span>
+              </h2>
+              <div className="space-y-7">
+                {[
+                  { icon: "🏆", title: "Win Competitions & Hackathons", desc: "Alumni-sponsored competitions that sharpen real-world skills and build your professional portfolio." },
+                  { icon: "🤝", title: "Connect Across 85 Countries", desc: "Our global chapters in Singapore, London, Melbourne, and Toronto run local networking events year-round." },
+                  { icon: "🚀", title: "Launch Early, Grow Fast", desc: "340+ alumni secured jobs through network referrals in the last year alone. Your next opportunity is one connection away." },
+                  { icon: "💡", title: "Mentor or Be Mentored", desc: "Our structured programme connects you with the right person at the right time — give back or get ahead." },
+                ].map((item) => (
+                  <div key={item.title} className="flex gap-4 items-start">
+                    <span className="text-2xl mt-0.5 shrink-0">{item.icon}</span>
+                    <div>
+                      <p className="font-display text-lg font-semibold mb-1" style={{ letterSpacing: "-0.01em" }}>{item.title}</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── S3: Featured Alumni ─────────────────────────────────────────────── */}
+      <section id="featured-alumni" className="container-page py-24">
         <div className="flex items-end justify-between flex-wrap gap-6 mb-14">
           <div>
-            <span
-              className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3"
-            >
-              Success Stories
-            </span>
-            <h2
-              className="font-display text-4xl md:text-5xl font-bold"
-              style={{ letterSpacing: "-0.02em" }}
-            >
-              Alumni Making <em className="italic not-italic text-primary">Waves.</em>
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">Success Stories</span>
+            <h2 className="font-display text-4xl md:text-5xl font-bold" style={{ letterSpacing: "-0.02em" }}>
+              Alumni Making <em className="not-italic text-primary">Waves.</em>
             </h2>
             <p className="text-muted-foreground mt-3 max-w-lg leading-relaxed">
-              Meet the graduates reshaping industries and rewriting the rules of
-              what's possible.
+              Meet the graduates reshaping industries and rewriting what's possible.
             </p>
           </div>
-          <Link
-            to="/directory"
-            className="group text-sm font-semibold text-primary inline-flex items-center gap-2 hover:gap-3 transition-all"
-          >
-            View all alumni
-            <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          <Link to="/directory" className="group text-sm font-semibold text-primary inline-flex items-center gap-2 hover:gap-3 transition-all">
+            View all alumni <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {featured.map((a) => (
-            <AlumniCard key={a.id} a={a} />
-          ))}
+          {featured.map((a) => <AlumniCard key={a.id} a={a} />)}
         </div>
       </section>
 
-      {/* ── Quote / Pull-quote section ────────────────────── */}
-      <section
-        className="relative overflow-hidden py-24"
-        style={{ background: "hsl(var(--primary-light))" }}
-      >
-        <div
-          className="absolute -top-20 -right-20 w-96 h-96 rounded-full opacity-10 pointer-events-none"
-          style={{ background: "hsl(var(--primary))" }}
-        />
-        <div className="container-page relative z-10 max-w-3xl mx-auto text-center">
-          <Quote
-            className="h-10 w-10 mx-auto mb-6 text-primary opacity-60"
-            strokeWidth={1.5}
-          />
-          <blockquote
-            className="font-display text-3xl md:text-4xl font-semibold leading-snug text-foreground"
-            style={{ letterSpacing: "-0.015em" }}
-          >
-            "Lincoln didn't just give me a degree — it gave me a community that
-            has opened every door since."
-          </blockquote>
-          <footer className="mt-6">
-            <p className="font-semibold text-foreground text-sm">Dr. Priya Nair</p>
-            <p className="text-muted-foreground text-sm mt-0.5">
-              MBBS '09 · Consultant Cardiologist, Singapore General Hospital
+      {/* ── S3b: Notable Mentors Grid ────────────────────────────────────────── */}
+      <section className="py-24" style={{ background: "#fafafa" }}>
+        <div className="container-page">
+          <div className="text-center mb-14">
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">Our Mentors</span>
+            <h2 className="font-display text-4xl md:text-5xl font-bold" style={{ letterSpacing: "-0.02em" }}>
+              Alumni Making <span className="text-primary">Waves Worldwide</span>
+            </h2>
+            <p className="text-muted-foreground mt-3 max-w-lg mx-auto leading-relaxed">
+              Meet the mentors reshaping industries and ready to guide you.
             </p>
-          </footer>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            {notableMentors.map((m) => (
+              <div key={m.initials}
+                className="bg-card rounded-2xl p-6 text-center border border-border hover:shadow-elegant hover:-translate-y-1 transition-all">
+                <div
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-xl font-black"
+                  style={{ background: m.hex + "18", border: `2px solid ${m.hex}30`, color: m.hex }}>
+                  {m.initials}
+                </div>
+                <p className="font-display font-semibold text-sm leading-tight mb-1" style={{ letterSpacing: "-0.01em" }}>{m.name}</p>
+                <p className="text-xs text-muted-foreground mb-3">{m.role}</p>
+                <span className="inline-block text-xs font-bold rounded-lg px-3 py-1"
+                  style={{ background: m.hex + "12", color: m.hex }}>
+                  {m.company}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ── Why Join ──────────────────────────────────────── */}
-      <section className="container-page py-24">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">
-            Why Join
-          </span>
-          <h2
-            className="font-display text-4xl md:text-5xl font-bold"
-            style={{ letterSpacing: "-0.02em" }}
-          >
-            Built for lifelong impact.
-          </h2>
-        </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          {[
-            {
-              n: "01",
-              t: "Network Globally",
-              d: "Connect with alumni across 85 countries and 40+ industries through our searchable directory and curated events.",
-            },
-            {
-              n: "02",
-              t: "Accelerate Your Career",
-              d: "Access a private job board, warm referrals, and exclusive opportunities sourced directly from fellow graduates.",
-            },
-            {
-              n: "03",
-              t: "Give Back",
-              d: "Mentor students, sponsor scholarships, or speak at campus events — your journey inspires the next generation.",
-            },
-          ].map((b) => (
-            <div
-              key={b.t}
-              className="card-premium group p-8 relative"
-            >
-<div
-  className="absolute -top-2 -right-2 font-display text-8xl font-bold text-primary opacity-[0.06] select-none pointer-events-none leading-none"
->
-  {b.n}
-</div>
-              <div
-                className="w-10 h-10 grid place-items-center rounded-xl text-white text-sm font-bold font-display mb-6"
-                style={{ background: "hsl(var(--primary))" }}
-              >
-                {b.n}
-              </div>
-              <h3
-                className="font-display text-2xl font-semibold mb-3"
-                style={{ letterSpacing: "-0.01em" }}
-              >
-                {b.t}
-              </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {b.d}
+      {/* ── S4: Map Spotlight ───────────────────────────────────────────────── */}
+      <section className="py-24 overflow-hidden" style={{ background: "#0F1420" }}>
+        <div className="container-page">
+          <div className="flex flex-col lg:flex-row gap-16 items-center">
+            <div className="lg:w-2/5 shrink-0">
+              <span className="text-xs font-semibold uppercase tracking-[0.15em] text-amber-400 block mb-3">Global Reach</span>
+              <h2 className="font-display text-4xl md:text-5xl font-bold text-white" style={{ letterSpacing: "-0.02em" }}>
+                Our Alumni,{" "}
+                <span style={{ background: "linear-gradient(90deg,#f59e0b,#ef4444)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                  Everywhere.
+                </span>
+              </h2>
+              <p className="mt-4 text-white/55 text-sm leading-relaxed">
+                From Petaling Jaya to Silicon Valley — Lincoln graduates are making an impact on every continent.
               </p>
+              <div className="mt-8 space-y-3">
+                {topAlumni.map((a, i) => (
+                  <button key={i} onClick={() => setActivePin(i)}
+                    className={`w-full flex items-center gap-4 p-4 rounded-2xl border text-left transition-all
+                      ${activePin === i ? "border-amber-400/50 bg-white/[.06]" : "border-white/[.07] bg-white/[.02] hover:bg-white/[.04]"}`}>
+                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${a.color} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+                      {a.initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-semibold text-sm truncate">{a.name}</p>
+                      <p className="text-white/45 text-xs mt-0.5">{a.role} · {a.region}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-amber-400 font-bold text-sm">{a.connects.toLocaleString()}</p>
+                      <p className="text-white/35 text-[10px] uppercase tracking-wider">connects</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <Link to="/directory" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-amber-400 hover:text-amber-300 transition-colors group">
+                View full directory <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
+            <div className="lg:w-3/5 relative">
+              <div className="relative w-full rounded-3xl overflow-hidden border border-white/[.07]"
+                style={{ background: "linear-gradient(145deg, #0d1528, #111827)", aspectRatio: "16/9" }}>
+                <svg className="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice">
+                  {Array.from({ length: 9 }).map((_, i) => <line key={`h${i}`} x1="0" y1={i * 50} x2="800" y2={i * 50} stroke="white" strokeWidth="0.5" />)}
+                  {Array.from({ length: 17 }).map((_, i) => <line key={`v${i}`} x1={i * 50} y1="0" x2={i * 50} y2="450" stroke="white" strokeWidth="0.5" />)}
+                  <ellipse cx="200" cy="200" rx="110" ry="70" fill="rgba(255,255,255,0.04)" />
+                  <ellipse cx="300" cy="260" rx="70"  ry="55" fill="rgba(255,255,255,0.04)" />
+                  <ellipse cx="430" cy="180" rx="80"  ry="60" fill="rgba(255,255,255,0.04)" />
+                  <ellipse cx="540" cy="200" rx="35"  ry="25" fill="rgba(255,255,255,0.04)" />
+                  <ellipse cx="620" cy="185" rx="55"  ry="45" fill="rgba(255,255,255,0.04)" />
+                  <ellipse cx="690" cy="290" rx="30"  ry="25" fill="rgba(255,255,255,0.04)" />
+                </svg>
+                {[{ x:"42%",y:"44%",s:3 },{ x:"55%",y:"35%",s:2 },{ x:"72%",y:"70%",s:2 },{ x:"30%",y:"50%",s:3 },{ x:"62%",y:"28%",s:2 },{ x:"80%",y:"55%",s:2 }].map((dot, i) => (
+                  <div key={i} className="absolute rounded-full bg-white/20"
+                    style={{ left: dot.x, top: dot.y, width: dot.s * 2, height: dot.s * 2, transform: "translate(-50%,-50%)" }} />
+                ))}
+                {topAlumni.map((a, i) => (
+                  <div key={i} className="absolute" style={{ left: a.x, top: a.y, transform: "translate(-50%,-50%)" }}>
+                    {activePin === i && (
+                      <div className="absolute inset-0 rounded-full ping2"
+                        style={{ width: 40, height: 40, marginLeft: -8, marginTop: -8, background: "rgba(245,158,11,0.2)" }} />
+                    )}
+                    <button onClick={() => setActivePin(i)}
+                      className={`relative w-6 h-6 rounded-full border-2 flex items-center justify-center text-[9px] font-bold text-white transition-all
+                        ${activePin === i ? "border-amber-400 scale-150 shadow-lg shadow-amber-400/30" : "border-white/30 scale-100 hover:scale-125"}`}
+                      style={{ background: activePin === i ? "linear-gradient(135deg,#f59e0b,#ef4444)" : "rgba(255,255,255,0.12)" }}>
+                      {a.initials[0]}
+                    </button>
+                    {activePin === i && (
+                      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 border border-amber-400/30 rounded-xl px-3 py-2 text-center whitespace-nowrap shadow-xl" style={{ minWidth: 130 }}>
+                        <p className="text-white text-xs font-semibold">{a.name}</p>
+                        <p className="text-amber-400 text-[10px] mt-0.5">{a.region}</p>
+                        <p className="text-white/50 text-[10px]">{a.connects.toLocaleString()} connections</p>
+                        <div className="absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 bg-gray-900 border-r border-b border-amber-400/30 rotate-45" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-white/30" />
+                  <span className="text-white/40 text-[10px] uppercase tracking-wider">Alumni active globally</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── S4b: Companies Hiring ────────────────────────────────────────────── */}
+      <section className="container-page py-24 text-center">
+        <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">Career Network</span>
+        <h2 className="font-display text-4xl md:text-5xl font-bold text-primary mb-2" style={{ letterSpacing: "-0.02em" }}>500+ Companies</h2>
+        <h3 className="font-display text-3xl md:text-4xl font-bold mb-4" style={{ letterSpacing: "-0.02em" }}>Actively Hiring Lincoln Alumni</h3>
+        <p className="text-muted-foreground text-sm mb-12 max-w-md mx-auto">Alumni referrals and exclusive job postings available through the network directory</p>
+        <div className="flex flex-wrap gap-3 justify-center max-w-4xl mx-auto">
+          {hiringCompanies.map((c) => (
+            <span key={c} className="bg-muted border border-border rounded-lg px-4 py-2 text-sm font-medium text-foreground">{c}</span>
           ))}
         </div>
       </section>
 
-      {/* ── Upcoming Events ───────────────────────────────── */}
-      <section
-        className="py-24"
-        style={{ background: "hsl(var(--muted))" }}
-      >
+      {/* ── S4c: Lincoln Advantage ───────────────────────────────────────────── */}
+      <section className="py-24" style={{ background: "#fafafa" }}>
+        <div className="container-page">
+          <div className="text-center mb-14">
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">Why Us</span>
+            <h2 className="font-display text-4xl md:text-5xl font-bold" style={{ letterSpacing: "-0.02em" }}>
+              Why Choose <span className="text-primary">Lincoln Alumni Network?</span>
+            </h2>
+          </div>
+          <div className="flex gap-4 max-w-4xl mx-auto flex-wrap md:flex-nowrap">
+            <div className="flex-1 min-w-[140px] rounded-2xl p-6" style={{ background: "linear-gradient(180deg,#f7e0e0,#fce8e8)" }}>
+              {advantageRows.map((r) => (
+                <div key={r.cat} className="py-3 border-b border-red-100 text-sm font-medium flex items-center gap-2" style={{ color: "#5a1a1a" }}>
+                  <MapPin className="h-3 w-3 shrink-0 text-primary/60" />{r.cat}
+                </div>
+              ))}
+            </div>
+            <div className="flex-[1.2] min-w-[180px] rounded-2xl p-6 border-2 border-primary/30" style={{ background: "#FFF8F0" }}>
+              <div className="flex items-center gap-2 mb-5 font-display font-bold text-base">
+                <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+                  <span className="text-white text-[10px] font-black">LU</span>
+                </div>
+                Lincoln Advantage
+              </div>
+              {advantageRows.map((r) => (
+                <div key={r.cat} className="py-3 border-b border-amber-100 text-sm font-semibold flex items-start gap-2" style={{ color: "#7C2020" }}>
+                  <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />{r.lincoln}
+                </div>
+              ))}
+            </div>
+            <div className="flex-1 min-w-[140px] bg-card rounded-2xl p-6 border border-border">
+              <p className="font-semibold text-muted-foreground text-center mb-5 text-sm">Others</p>
+              {advantageRows.map((r) => (
+                <div key={r.cat} className="py-3 border-b border-border text-sm text-muted-foreground">{r.others}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── S4d: Hear It From Lincoln Alumni ────────────────────────────────── */}
+      <section className="py-24" style={{ background: "#FDF6F0" }}>
+        <div className="container-page">
+          <div className="text-center mb-14">
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">Alumni Voices</span>
+            <h2 className="font-display text-4xl md:text-5xl font-bold" style={{ letterSpacing: "-0.02em" }}>
+              Hear It From{" "}
+              <span className="text-primary">Lincoln Alumni</span>
+            </h2>
+            <p className="text-muted-foreground mt-3 max-w-lg mx-auto leading-relaxed text-sm">
+              Real stories from graduates who found mentors, careers, and community through the network.
+            </p>
+          </div>
+
+          {/* Cards */}
+          <div className="grid md:grid-cols-3 gap-5">
+            {visibleTestimonials.map((t, i) => (
+              <div
+                key={`${testimonialIdx}-${i}`}
+                className="bg-white rounded-2xl p-7 border border-red-100 shadow-sm flex flex-col gap-5"
+                style={{ animation: "fadeUp 350ms ease-out both" }}
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src={t.image}
+                    alt={t.name}
+                    className="w-12 h-12 rounded-full object-cover border-2 border-red-100"
+                  />
+                  <div>
+                    <p className="font-display font-semibold text-sm leading-tight">{t.name}</p>
+                    <p className="text-[11px] text-primary font-medium mt-0.5">{t.role}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{t.grad}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-neutral-600 leading-relaxed flex-1">"{t.quote}"</p>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, s) => (
+                    <Star key={s} className="h-3 w-3 text-amber-400" fill="currentColor" />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Carousel nav */}
+          <div className="flex items-center justify-center gap-4 mt-10">
+            <button
+              onClick={prevTestimonial}
+              className="w-10 h-10 rounded-full border border-border bg-white hover:border-primary hover:text-primary text-muted-foreground flex items-center justify-center transition-all"
+            >
+              <ChevronRight className="h-4 w-4 rotate-180" />
+            </button>
+            <div className="flex gap-2">
+              {testimonials.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setTestimonialIdx(i)}
+                  className="w-2 h-2 rounded-full transition-all"
+                  style={{ background: i === testimonialIdx % testimonials.length ? "#C1121F" : "#e5e7eb" }}
+                />
+              ))}
+            </div>
+            <button
+              onClick={nextTestimonial}
+              className="w-10 h-10 rounded-full border border-border bg-white hover:border-primary hover:text-primary text-muted-foreground flex items-center justify-center transition-all"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-10">
+            <Link
+              to="/directory"
+              className="inline-flex items-center gap-2 bg-primary text-white rounded-full px-8 py-3.5 text-sm font-semibold hover:bg-primary/90 transition-all hover:-translate-y-0.5"
+            >
+              Join the Network <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── S4e: Be the Next Success Story ──────────────────────────────────── */}
+      <section className="py-24" style={{ background: "#FDF6F0" }}>
+        <div className="container-page">
+          <div className="text-center mb-14">
+            <h2 className="font-display text-4xl md:text-5xl font-bold" style={{ letterSpacing: "-0.02em" }}>
+              Be the Next{" "}
+              <span className="text-primary">Success Story</span>
+            </h2>
+            <p className="text-muted-foreground mt-3 max-w-md mx-auto text-sm leading-relaxed">
+              Every great career has a turning point. For Lincoln alumni, that moment often starts here.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-6 items-center max-w-5xl mx-auto">
+            {/* Left — story cards + stats */}
+            <div className="flex flex-col gap-5">
+              {successStories.map((s) => (
+                <div
+                  key={s.name}
+                  className="bg-white rounded-2xl border border-red-100 p-6 flex items-center gap-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all"
+                >
+                  <img
+                    src={s.image}
+                    alt={s.name}
+                    className="w-20 h-20 rounded-xl object-cover shrink-0 border-2 border-red-100"
+                  />
+                  <div>
+                    <p className="font-display font-bold text-lg" style={{ letterSpacing: "-0.01em" }}>{s.name}</p>
+                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{s.achievement}</p>
+                  </div>
+                </div>
+              ))}
+
+              <div className="bg-white rounded-2xl border border-red-100 p-5 shadow-sm">
+                <div className="grid grid-cols-3 gap-4 text-center divide-x divide-red-100">
+                  {[
+                    { n: "340+",   l: "Jobs via\nreferrals" },
+                    { n: "48",     l: "Scholarships\nawarded"  },
+                    { n: "1,200+", l: "Active\nmentors"       },
+                  ].map((s) => (
+                    <div key={s.l} className="px-2">
+                      <div className="font-display text-2xl font-bold text-primary" style={{ letterSpacing: "-0.02em" }}>{s.n}</div>
+                      <div className="text-[10px] text-muted-foreground mt-1 leading-tight whitespace-pre-line">{s.l}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right — orbit graphic */}
+            <div className="flex items-center justify-center py-8">
+              <div className="relative w-72 h-72">
+                {/* Dashed orbit ring */}
+                <div
+                  className="absolute inset-0 rounded-full border-2 border-dashed"
+                  style={{ borderColor: "#C1121F40" }}
+                />
+
+                {/* Center photo */}
+                <div
+                  className="absolute rounded-full overflow-hidden border-4 border-white shadow-xl"
+                  style={{ inset: "10%" }}
+                >
+                  <img
+                    src="https://randomuser.me/api/portraits/women/89.jpg"
+                    alt="Featured alumni"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* Centre stat overlay */}
+                <div
+                  className="absolute bottom-[14%] left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-sm rounded-xl px-4 py-2 text-center shadow-lg border border-red-100 whitespace-nowrap"
+                  style={{ zIndex: 10 }}
+                >
+                  <p className="font-display font-bold text-primary text-sm">25,000+ Alumni</p>
+                  <p className="text-[10px] text-muted-foreground">across 85 countries</p>
+                </div>
+
+                {/* Orbit avatars */}
+                {orbitAlumni.map((a, i) => {
+                  const rad = (a.angle * Math.PI) / 180;
+                  const r = 50;
+                  const cx = 50 + r * Math.cos(rad);
+                  const cy = 50 + r * Math.sin(rad);
+                  return (
+                    <div
+                      key={i}
+                      className="absolute w-11 h-11 rounded-full border-3 border-white shadow-md overflow-hidden"
+                      style={{
+                        left: `${cx}%`,
+                        top: `${cy}%`,
+                        transform: "translate(-50%, -50%)",
+                        border: "3px solid white",
+                      }}
+                    >
+                      <img src={a.image} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  );
+                })}
+
+                {/* Icon badges */}
+                {[
+                  { angle: 120, bg: "#FEF9C3", icon: "⭐", label: "Mentor" },
+                  { angle: 300, bg: "#DCFCE7", icon: "🎯", label: "Goals"  },
+                ].map((b, i) => {
+                  const rad = (b.angle * Math.PI) / 180;
+                  const cx = 50 + 50 * Math.cos(rad);
+                  const cy = 50 + 50 * Math.sin(rad);
+                  return (
+                    <div
+                      key={i}
+                      className="absolute w-9 h-9 rounded-full flex items-center justify-center text-base shadow-md border-2 border-white"
+                      style={{
+                        left: `${cx}%`,
+                        top: `${cy}%`,
+                        transform: "translate(-50%,-50%)",
+                        background: b.bg,
+                      }}
+                    >
+                      {b.icon}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── S4f: How to Join the Network ─────────────────────────────────────── */}
+      <section className="py-24 bg-background">
+        <div className="container-page">
+          <div className="text-center mb-14">
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">Simple Process</span>
+            <h2 className="font-display text-4xl md:text-5xl font-bold" style={{ letterSpacing: "-0.02em" }}>
+              How to Join the{" "}
+              <span className="text-primary">Alumni Network</span>
+            </h2>
+            <p className="text-muted-foreground mt-3 max-w-lg mx-auto text-sm leading-relaxed">
+              Four simple steps to unlock lifetime access to 25,000+ Lincoln alumni.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-6xl mx-auto">
+            {joinSteps.map((step, i) => (
+              <div
+                key={step.title}
+                className="rounded-2xl p-6 border border-transparent flex flex-col gap-4 hover:-translate-y-1 hover:shadow-md transition-all"
+                style={{ background: step.bg, borderColor: step.color + "20" }}
+              >
+                {/* Step number + emoji */}
+                <div className="flex items-center justify-between">
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-sm border-2 border-white"
+                    style={{ background: step.color + "15" }}
+                  >
+                    {step.emoji}
+                  </div>
+                  <span
+                    className="text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full"
+                    style={{ background: step.color + "15", color: step.color }}
+                  >
+                    Step {i + 1}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h3
+                  className="font-display text-lg font-bold leading-snug"
+                  style={{ color: step.color, letterSpacing: "-0.01em" }}
+                >
+                  {step.title}
+                </h3>
+
+                {/* Bullet points */}
+                <ul className="space-y-2 flex-1">
+                  {step.points.map((pt) => (
+                    <li key={pt} className="flex items-start gap-2 text-sm text-neutral-600">
+                      <span className="mt-1 w-1.5 h-1.5 rounded-full shrink-0" style={{ background: step.color }} />
+                      {pt}
+                    </li>
+                  ))}
+                </ul>
+
+                {/* CTA on first step */}
+                {step.hasCta && (
+                  <Link
+                    to="/auth"
+                    className="mt-2 flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white transition-all hover:opacity-90"
+                    style={{ background: step.color }}
+                  >
+                    Register Now <ArrowRight className="h-4 w-4" />
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom note */}
+          <p className="text-center text-xs text-muted-foreground mt-8">
+            Already registered?{" "}
+            <Link to="/auth" className="text-primary font-semibold hover:underline">
+              Sign in to your alumni account →
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      {/* ── S5: Mentorship CTA ──────────────────────────────────────────────── */}
+      <section className="container-page py-24">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">Mentorship Programme</span>
+          <h2 className="font-display text-4xl md:text-5xl font-bold" style={{ letterSpacing: "-0.02em" }}>Give back. Move forward.</h2>
+          <p className="mt-4 text-muted-foreground leading-relaxed">
+            Whether you're looking for a mentor or ready to become one — the Lincoln network is your launchpad.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="relative rounded-3xl overflow-hidden p-10 flex flex-col justify-between min-h-72 group"
+            style={{ background: "linear-gradient(140deg, #0f172a 0%, #1e1b4b 100%)" }}>
+            <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full opacity-10 pointer-events-none" style={{ background: "hsl(220 70% 60%)" }} />
+            <div>
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6" style={{ background: "rgba(255,255,255,0.08)" }}>
+                <GraduationCap className="h-6 w-6 text-blue-400" />
+              </div>
+              <h3 className="font-display text-2xl font-bold text-white mb-2" style={{ letterSpacing: "-0.01em" }}>I'm a Student</h3>
+              <p className="text-white/60 text-sm leading-relaxed max-w-xs">Connect with alumni in your field, get career guidance, and open doors you didn't know existed.</p>
+              <ul className="mt-5 space-y-2">
+                {["1-on-1 career mentoring","CV & interview prep","Industry introductions"].map(t => (
+                  <li key={t} className="flex items-center gap-2 text-sm text-white/70">
+                    <ChevronRight className="h-3.5 w-3.5 text-blue-400 shrink-0" />{t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <Link to="/directory" className="mt-8 self-start inline-flex items-center gap-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 px-6 py-3 text-sm font-semibold text-white transition-all">
+              Find a Mentor <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="relative rounded-3xl overflow-hidden p-10 flex flex-col justify-between min-h-72 group"
+            style={{ background: "linear-gradient(140deg, hsl(var(--primary)) 0%, hsl(350 70% 30%) 100%)" }}>
+            <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full opacity-10 pointer-events-none" style={{ background: "hsl(30 90% 60%)" }} />
+            <div>
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6" style={{ background: "rgba(255,255,255,0.12)" }}>
+                <Heart className="h-6 w-6 text-amber-300" />
+              </div>
+              <h3 className="font-display text-2xl font-bold text-white mb-2" style={{ letterSpacing: "-0.01em" }}>I'm an Alumni</h3>
+              <p className="text-white/75 text-sm leading-relaxed max-w-xs">Share your journey, shape the next generation, and stay connected to the community that made you.</p>
+              <ul className="mt-5 space-y-2">
+                {["Mentor 1 student, change 1 life","Join the speaker network","Access alumni-only events"].map(t => (
+                  <li key={t} className="flex items-center gap-2 text-sm text-white/80">
+                    <ChevronRight className="h-3.5 w-3.5 text-amber-300 shrink-0" />{t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <Link to="/contact" className="mt-8 self-start inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-gray-900 hover:bg-amber-400 transition-all shadow-lg">
+              Become a Mentor <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── S6: Upcoming Events ─────────────────────────────────────────────── */}
+      <section className="py-24" style={{ background: "hsl(var(--muted))" }}>
         <div className="container-page">
           <div className="flex items-end justify-between flex-wrap gap-6 mb-14">
             <div>
-              <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">
-                What's On
-              </span>
-              <h2
-                className="font-display text-4xl md:text-5xl font-bold"
-                style={{ letterSpacing: "-0.02em" }}
-              >
-                Upcoming Events.
-              </h2>
+              <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">What's On</span>
+              <h2 className="font-display text-4xl md:text-5xl font-bold" style={{ letterSpacing: "-0.02em" }}>Upcoming Events.</h2>
             </div>
-            <Link
-              to="/events"
-              className="group text-sm font-semibold text-primary inline-flex items-center gap-2 hover:gap-3 transition-all"
-            >
-              All events
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <Link to="/events" className="group text-sm font-semibold text-primary inline-flex items-center gap-2 hover:gap-3 transition-all">
+              All events <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
-
           <div className="grid gap-5 md:grid-cols-3">
             {upcoming.map((e, idx) => (
-              <Link
-                key={e.id}
-                to="/events"
-                className="group block bg-card rounded-2xl overflow-hidden border border-border hover:shadow-elegant transition-all hover:-translate-y-1"
-              >
-                {/* Date stripe */}
-                <div
-                  className="relative h-44 flex items-end p-5"
-                  style={{
-                    background:
-                      idx === 0
-                        ? "linear-gradient(135deg, hsl(350 85% 30%) 0%, hsl(220 40% 20%) 100%)"
-                        : idx === 1
-                        ? "linear-gradient(135deg, hsl(220 40% 18%) 0%, hsl(350 60% 25%) 100%)"
-                        : "linear-gradient(135deg, hsl(28 85% 35%) 0%, hsl(350 85% 28%) 100%)",
-                  }}
-                >
+              <Link key={e.id} to="/events"
+                className="group block bg-card rounded-2xl overflow-hidden border border-border hover:shadow-elegant transition-all hover:-translate-y-1">
+                <div className="relative h-44 flex items-end p-5"
+                  style={{ background: idx === 0 ? "linear-gradient(135deg, hsl(350 85% 30%) 0%, hsl(220 40% 20%) 100%)" : idx === 1 ? "linear-gradient(135deg, hsl(220 40% 18%) 0%, hsl(350 60% 25%) 100%)" : "linear-gradient(135deg, hsl(28 85% 35%) 0%, hsl(350 85% 28%) 100%)" }}>
                   <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-2.5 text-white">
-                    <div className="font-display text-3xl font-bold leading-none">
-                      {new Date(e.date).getDate()}
-                    </div>
+                    <div className="font-display text-3xl font-bold leading-none">{new Date(e.date).getDate()}</div>
                     <div className="text-[10px] uppercase tracking-widest font-semibold opacity-80 mt-0.5">
-                      {new Date(e.date).toLocaleString("en", {
-                        month: "long",
-                        year: "numeric",
-                      })}
+                      {new Date(e.date).toLocaleString("en", { month: "long", year: "numeric" })}
                     </div>
                   </div>
-                  <span className="absolute top-4 right-4 pill bg-white/15 border border-white/20 text-white text-[10px]">
-                    {e.mode}
-                  </span>
+                  <span className="absolute top-4 right-4 pill bg-white/15 border border-white/20 text-white text-[10px]">{e.mode}</span>
                 </div>
                 <div className="p-6">
-                  <h3
-                    className="font-display text-xl font-semibold group-hover:text-primary transition-colors"
-                    style={{ letterSpacing: "-0.01em" }}
-                  >
-                    {e.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1.5 font-medium">
-                    {e.location}
+                  <h3 className="font-display text-xl font-semibold group-hover:text-primary transition-colors" style={{ letterSpacing: "-0.01em" }}>{e.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-1.5 font-medium flex items-center gap-1.5">
+                    <MapPin className="h-3 w-3" />{e.location}
                   </p>
-                  <p className="text-sm text-muted-foreground mt-3 leading-relaxed line-clamp-2">
-                    {e.description}
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-3 leading-relaxed line-clamp-2">{e.description}</p>
+                  <div className="mt-4 flex items-center gap-1 text-primary text-xs font-semibold group-hover:gap-2 transition-all">
+                    View details <ArrowRight className="h-3 w-3" />
+                  </div>
                 </div>
               </Link>
             ))}
@@ -358,42 +1212,96 @@ function Home() {
         </div>
       </section>
 
-      {/* ── CTA ───────────────────────────────────────────── */}
+      {/* ── S7: News ────────────────────────────────────────────────────────── */}
       <section className="container-page py-24">
-        <div
-          className="relative overflow-hidden rounded-3xl px-10 md:px-20 py-20 text-center text-white"
-          style={{ background: "var(--gradient-hero)" }}
-        >
-          {/* Decorative circles */}
-          <div
-            className="absolute -top-20 -left-20 w-64 h-64 rounded-full opacity-10 pointer-events-none"
-            style={{ background: "hsl(var(--accent))" }}
-          />
-          <div
-            className="absolute -bottom-16 -right-16 w-80 h-80 rounded-full opacity-10 pointer-events-none"
-            style={{ background: "white" }}
-          />
+        <div className="flex items-end justify-between flex-wrap gap-6 mb-14">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">Latest</span>
+            <h2 className="font-display text-4xl md:text-5xl font-bold" style={{ letterSpacing: "-0.02em" }}>News & Highlights.</h2>
+            <p className="text-muted-foreground mt-3 max-w-lg leading-relaxed">Alumni achievements, campus updates, and community milestones.</p>
+          </div>
+          <Link to="/about" className="group text-sm font-semibold text-primary inline-flex items-center gap-2 hover:gap-3 transition-all">
+            All news <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {newsItems.map((item, i) => (
+            <article key={i} className="group card-premium p-7 flex flex-col gap-4 hover:-translate-y-1 transition-transform cursor-pointer">
+              <div className="flex items-center justify-between gap-2">
+                <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${item.tagColor}`}>
+                  <Star className="h-2.5 w-2.5" />{item.tag}
+                </span>
+                <span className="text-xs text-muted-foreground">{item.date}</span>
+              </div>
+              <h3 className="font-display text-lg font-semibold leading-snug group-hover:text-primary transition-colors" style={{ letterSpacing: "-0.01em" }}>
+                {item.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed flex-1">{item.excerpt}</p>
+              <div className="flex items-center justify-between pt-2 border-t border-border">
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Newspaper className="h-3 w-3" />{item.readTime}
+                </span>
+                <span className="text-xs font-semibold text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
+                  Read more <ArrowRight className="h-3 w-3" />
+                </span>
+              </div>
+            </article>
+          ))}
+        </div>
 
+        {/* ── S7b: FAQ ─────────────────────────────────────────────────────── */}
+        <div className="mt-20">
+          <div className="text-center mb-10">
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-primary block mb-3">Help</span>
+            <h2 className="font-display text-4xl md:text-5xl font-bold" style={{ letterSpacing: "-0.02em" }}>Frequently Asked Questions</h2>
+          </div>
+          <div className="flex gap-2.5 justify-center flex-wrap mb-10">
+            {Object.keys(faqData).map((tab) => (
+              <button key={tab}
+                onClick={() => { setActiveFaqTab(tab); setOpenFaq(null); }}
+                className={`rounded-full px-5 py-2 text-sm font-semibold border transition-all
+                  ${activeFaqTab === tab
+                    ? "bg-amber-400 border-amber-400 text-black"
+                    : "bg-background border-border text-muted-foreground hover:text-foreground"}`}>
+                {tab}
+              </button>
+            ))}
+          </div>
+          <div className="max-w-3xl mx-auto space-y-3">
+            {(faqData[activeFaqTab] ?? []).map((faq, i) => (
+              <div key={i} className="border border-border rounded-xl overflow-hidden bg-card">
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left text-sm font-semibold hover:bg-muted/50 transition-colors">
+                  <span>{faq.q}</span>
+                  <span className="text-primary text-xl leading-none shrink-0">{openFaq === i ? "−" : "+"}</span>
+                </button>
+                {openFaq === i && (
+                  <div className="px-6 pb-5 text-sm text-muted-foreground leading-relaxed border-t border-border pt-4">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Final CTA */}
+        <div className="mt-20 relative overflow-hidden rounded-3xl px-10 md:px-20 py-20 text-center text-white"
+          style={{ background: "var(--gradient-hero)" }}>
+          <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full opacity-10 pointer-events-none" style={{ background: "hsl(var(--accent))" }} />
+          <div className="absolute -bottom-16 -right-16 w-80 h-80 rounded-full opacity-10 pointer-events-none" style={{ background: "white" }} />
           <div className="relative z-10">
-            <span className="pill bg-white/15 border border-white/20 text-white mb-5 mx-auto">
-              🎓 Join 25,000+ Alumni
-            </span>
-            <h2
-              className="font-display text-4xl md:text-6xl font-bold max-w-2xl mx-auto mt-4 leading-tight"
-              style={{ letterSpacing: "-0.025em" }}
-            >
+            <span className="pill bg-white/15 border border-white/20 text-white mb-5 mx-auto">🎓 Join 25,000+ Alumni</span>
+            <h2 className="font-display text-4xl md:text-6xl font-bold max-w-2xl mx-auto mt-4 leading-tight" style={{ letterSpacing: "-0.025em" }}>
               Your story didn't end at graduation.
             </h2>
             <p className="mt-5 opacity-80 max-w-lg mx-auto leading-relaxed">
-              Join the Lincoln Alumni Network and unlock a lifetime of
-              connections, opportunities, and impact.
+              Join the Lincoln Alumni Network and unlock a lifetime of connections, opportunities, and impact.
             </p>
-            <Link
-              to="/contact"
-              className="mt-10 inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-4 text-sm font-semibold text-gray-900 hover:bg-amber-400 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-0.5 group"
-            >
-              Become a Member
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            <Link to="/contact"
+              className="mt-10 inline-flex items-center gap-2.5 rounded-full bg-white px-8 py-4 text-sm font-semibold text-gray-900 hover:bg-amber-400 transition-all shadow-xl hover:-translate-y-0.5 group">
+              Become a Member <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </div>
